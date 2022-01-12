@@ -40,19 +40,23 @@ them!
 
 ## OpenDap Syntax
 
-To request a subset from a TDS data using OpenDAP protocol, a
+To request a subset from a TDS data using OpenDAP protocol, a common
+form can be followed:
 
     URL?{varname}{Ymin:1:Ymax}{Xmin:1:Xmax}{Tmin:1:Tmax}
 
-## Two use case
+## Two use cases
 
-Two predominate use cases are TDS catolougs that store all variables as
+### TDS
+
+One predominate use case is TDS catolougs that store all variables as
 independent datasets (think individual files). To archive these we need
-to scan the TDS to find the avialable data resources. For this, we can
+to scan the TDS to find the available data resources. For this, we can
 use `read_tds`:
 
 ``` r
-tds = read_tds('http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_MET_aggregated_catalog.html', "gridmet") 
+tds = read_tds(URL = 'http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_MET_aggregated_catalog.html', 
+               id = "gridmet") 
 head(tds)
 #>                                  link
 #> 1   agg_met_pr_1979_CurrentYear_CONUS
@@ -76,6 +80,8 @@ head(tds)
 #> 5 gridmet
 #> 6 gridmet
 ```
+
+### Aggregated files
 
 | NAME      | DESCRITPION                                                 | EXAMPLE                                                         |
 |-----------|-------------------------------------------------------------|-----------------------------------------------------------------|

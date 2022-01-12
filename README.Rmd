@@ -41,7 +41,7 @@ This allows users to stream the portion of the data set releavnat to them!
 
 ## OpenDap Syntax
 
-To request a subset from a TDS data using OpenDAP protocol, a 
+To request a subset from a TDS data using OpenDAP protocol, a common form can be followed:
 
 ```
 URL?{varname}{Ymin:1:Ymax}{Xmin:1:Xmax}{Tmin:1:Tmax}

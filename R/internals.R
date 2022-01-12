@@ -65,7 +65,7 @@
     T_name   = omit.na(unique(atts$T))
   }
 
-  T_var_info <- var.inq.nc(nc, "time")
+  T_var_info <- var.inq.nc(nc, T_name)
 
   time_steps <- utcal.nc(unitstring = att.get.nc(nc, T_var_info$name, "units"),
                          value = var.get.nc(nc, T_var_info$name, unpack = TRUE),

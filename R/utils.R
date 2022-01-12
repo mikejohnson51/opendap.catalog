@@ -265,7 +265,6 @@ grid_meta = function(raw){
   }
 }
 
-
 #' Add All DAP Metadata
 #' @param raw a data.frame
 #' @return data.frame
