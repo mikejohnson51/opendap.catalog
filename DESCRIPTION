@@ -9,10 +9,10 @@ Depends:
     R(>= 3.5.0)
 Imports: 
     dplyr,
-    logger,
     ncmeta,
     RNetCDF,
-    rvest
+    rvest,
+    terra
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

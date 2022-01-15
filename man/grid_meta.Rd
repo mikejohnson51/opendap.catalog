@@ -10,7 +10,7 @@ grid_meta(raw)
 \item{raw}{a data.frame}
 }
 \value{
-data.frame (raw, + diminsion, proj, ext, X_name, Y_name, T_name)
+data.frame (raw, + dimension, proj, ext, X_name, Y_name, T_name)
 }
 \description{
 Add Grid Metadata

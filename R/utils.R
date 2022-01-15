@@ -68,13 +68,16 @@ read_dap_file  = function(URL, id){
 
   nc   = RNetCDF::open.nc(URL)
 
-  atts = ncmeta::nc_coord_var(nc)
+  atts = ncmeta::nc_coord_var(nc) %>%
+    dplyr::select(variable, X,Y,T)
 
-  T_name   = omit.na(unique(atts$T))
-  X_name   = omit.na(unique(atts$X))
-  Y_name   = omit.na(unique(atts$Y))
+  raw = filter(atts,  !apply(atts, 1, function(x){any(is.na(x))}))
 
-  raw = filter(atts, .data$X == X_name, .data$Y == Y_name, .data$T == T_name) %>%
+  T_name   = omit.na(unique(raw$T))
+  X_name   = omit.na(unique(raw$X))
+  Y_name   = omit.na(unique(raw$Y))
+
+  raw = raw %>%
     select(varname = .data$variable, X_name = .data$X, Y_name = .data$Y, T_name = .data$T) %>%
     mutate(URL = URL, id = !!id)
 
@@ -87,7 +90,9 @@ read_dap_file  = function(URL, id){
 
   raw$proj = g$proj
   raw$ext  = I(list(g$ext))
-  raw$diminsion  = I(list(g$diminsion))
+  raw$dimension  = I(list(g$dimension))
+
+  close.nc(nc)
 
   raw
 }
@@ -97,7 +102,6 @@ read_dap_file  = function(URL, id){
 #' @return data.frame
 #' @export
 #' @importFrom RNetCDF open.nc file.inq.nc var.inq.nc close.nc
-#' @importFrom logger log_info
 #' @importFrom dplyr bind_rows right_join group_by slice ungroup
 
 variable_meta = function(raw){
@@ -107,7 +111,7 @@ variable_meta = function(raw){
   }
 
   if(all(c('varname', 'units') %in% names(raw))){
-    logger::log_info("Variable metadata already exists")
+    message("Variable metadata already exists")
     return(raw)
   } else {
 
@@ -131,10 +135,17 @@ variable_meta = function(raw){
     )
 
     if(!is.null(nc)){
-      nvar <- RNetCDF::file.inq.nc(nc)$nvar
-      varnames <- character(nvar)
-      for(j in seq_len(nvar)) {
-        varnames[j] <- RNetCDF::var.inq.nc(nc, j-1)$name
+
+      if("varname" %in% names(raw)){
+        varnames <- RNetCDF::var.inq.nc(nc, tmp$varname[i])$name
+      } else {
+        nvar <- RNetCDF::file.inq.nc(nc)$nvar
+
+        varnames <- character(nvar)
+
+        for(j in seq_len(nvar)) {
+          varnames[j] <- RNetCDF::var.inq.nc(nc, j-1)$name
+        }
       }
 
       if(!is.null(varnames)){
@@ -151,7 +162,7 @@ variable_meta = function(raw){
         units = try_att(nc, name, "units")
       )
 
-      logger::log_info("[", tmp$id[i], ":", tmp$variable[i], "] (", i, "/", nrow(tmp), ")")
+      message("[", tmp$id[i], ":", tmp$variable[i], "] (", i, "/", nrow(tmp), ")")
       RNetCDF::close.nc(nc)
 
     } else {
@@ -162,7 +173,7 @@ variable_meta = function(raw){
         units = NA
       )
 
-      logger::log_info(basename(raw$URL[i]), " fails")
+      message(basename(raw$URL[i]), " fails")
     }
   }
 
@@ -183,13 +194,12 @@ variable_meta = function(raw){
 #' @return data.frame
 #' @export
 #' @importFrom RNetCDF open.nc close.nc
-#' @importFrom logger log_info
 #' @importFrom dplyr mutate
 
 time_meta = function(raw){
 
   if(all(c('duration', 'interval', 'nT') %in% names(raw))){
-   logger::log_info("Time metadata already exists")
+   message("Time metadata already exists")
    return(raw)
   } else {
 
@@ -215,7 +225,7 @@ time_meta = function(raw){
     ll[[i]] = as.data.frame(.resource_time(nc)) %>%
       mutate(scenario = tmp$scenario[i])
 
-    logger::log_info("[", tmp$id[i], ":", tmp$scenario[i], "] (", i, "/", nrow(tmp), ")")
+    message("[", tmp$id[i], ":", tmp$scenario[i], "] (", i, "/", nrow(tmp), ")")
     RNetCDF::close.nc(nc)
   }
 
@@ -236,17 +246,16 @@ time_meta = function(raw){
 
 }
 
-
 #' Add Grid Metadata
 #' @param raw a data.frame
-#' @return data.frame (raw, + diminsion, proj, ext, X_name, Y_name, T_name)
+#' @return data.frame (raw, + dimension, proj, ext, X_name, Y_name, T_name)
 #' @export
 #' @importFrom RNetCDF open.nc close.nc
 
 grid_meta = function(raw){
 
-  if(all(c('T_name', 'X_name', 'Y_name', 'diminsion', 'ext', 'proj') %in% names(raw))){
-    logger::log_info("Grid metadata already exists")
+  if(all(c('T_name', 'X_name', 'Y_name', 'dimension', 'ext', 'proj') %in% names(raw))){
+    message("Grid metadata already exists")
     return(raw)
   } else {
     url = paste0(raw$URL[1], "#fillmismatch")
@@ -255,7 +264,7 @@ grid_meta = function(raw){
     g = .resource_grid(nc)
     raw$proj = g$proj
     raw$ext  = I(list(g$ext))
-    raw$diminsion  = I(list(g$diminsion))
+    raw$dimension  = I(list(g$dimension))
     raw$X_name = o$X_name
     raw$Y_name = o$T_name
     raw$T_name = o$X_name
@@ -272,9 +281,7 @@ grid_meta = function(raw){
 #' @importFrom dplyr `%>%`
 
 dap_meta = function(raw){
- raw = variable_meta(raw) %>%
+ variable_meta(raw) %>%
     time_meta() %>%
     grid_meta()
-
- raw
 }

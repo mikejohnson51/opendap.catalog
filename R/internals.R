@@ -2,7 +2,7 @@
 #' @param nc "NetCDF" object which points to the NetCDF dataset. Found with RNetCDF::open.nc.
 #' @param X_name Name of X diminion. If NULL it is found
 #' @param Y_name Name of Y diminion. If NULL it is found
-#' @return list with (proj, ext, and diminsion)
+#' @return list with (proj, ext, and dimension)
 #' @importFrom ncmeta nc_coord_var nc_grid_mapping_atts nc_gm_to_prj
 #' @importFrom RNetCDF var.get.nc
 
@@ -46,7 +46,7 @@
   list(
     proj = proj,
     ext = c(min(X), max(X), min(Y), max(Y)),
-    diminsion = c(length(X), length(Y))
+    dimension = c(length(X), length(Y))
   )
 
 }
@@ -67,19 +67,22 @@
 
   T_var_info <- var.inq.nc(nc, T_name)
 
-  time_steps <- utcal.nc(unitstring = att.get.nc(nc, T_var_info$name, "units"),
+  time_steps <- utcal.nc(unitstring =  att.get.nc(nc, T_var_info$name, "units"),
                          value = var.get.nc(nc, T_var_info$name, unpack = TRUE),
                          type = "c")
 
   dT = diff(time_steps)
 
   g = expand.grid(unique(dT), units(dT)) %>%
-    data.frame()
+    data.frame() %>%
+    mutate(n = as.numeric(table(dT)))
 
-  names(g) = c("value", "interval")
+  names(g) = c("value", "interval", "n")
 
-  if(nrow(g) > 1 & all(c(28,30,31) %in% g$value)){
+  if(nrow(g) > 1 & all(g$value %in% c(28,29,30,31))){
     g = data.frame(value = 1, interval = "months")
+  } else {
+    g = dplyr::slice_max(g, n)
   }
 
   #If time is within 5 days of today then we call the range Open
@@ -89,10 +92,14 @@
 
   nT = ifelse(maxDate == "..", NA, length(time_steps))
 
+  int = paste(g$value, g$interval)
+
+  if(length(int) == 0){int = "0"}
+
   list(#Tmin = min(time_steps),
     #Tmax = max(time_steps),
     duration = paste0(min(time_steps), "/", maxDate),
-    interval = paste(g$value, g$interval),
+    interval = int,
     nT   = nT
   )
 }

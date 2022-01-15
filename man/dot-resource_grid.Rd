@@ -14,7 +14,7 @@
 \item{Y_name}{Name of Y diminion. If NULL it is found}
 }
 \value{
-list with (proj, ext, and diminsion)
+list with (proj, ext, and dimension)
 }
 \description{
 Extract grid metadata from NC Pointer
