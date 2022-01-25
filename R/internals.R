@@ -32,7 +32,7 @@ parse_date = function(duration, interval){
 .resource_grid = function(nc, X_name = NULL, Y_name = NULL, stopIfNotEqualSpaced = TRUE){
 
   if(is.null(X_name) | is.null(Y_name)){
-    atts = dap_xyxv(nc)
+    atts = dap_xyzv(nc)
     X_name   = omit.na(unique(atts$X_name))
     Y_name   = omit.na(unique(atts$Y_name))
   }
@@ -84,8 +84,8 @@ parse_date = function(duration, interval){
 
   xrange <- c(min(xx), max(xx))
   resx <- (xrange[2] - xrange[1]) / (ncols-1)
-  X1 <- head(xx, 1)
-  Xn <- tail(xx, 1)
+  X1 <- xx[1]
+  Xn <- xx[length(xx)]
   rm(xx)
 
   yy <- try(RNetCDF::var.get.nc(nc, Y_name))
@@ -94,8 +94,8 @@ parse_date = function(duration, interval){
     yy <- seq_len(nrows)
   }
 
-  Y1 <- head(yy, 1)
-  Yn <- tail(yy, 1)
+  Y1 <- yy[1]
+  Yn <- yy[length(yy)]
 
   rs <- yy[-length(yy)] - yy[-1]
 

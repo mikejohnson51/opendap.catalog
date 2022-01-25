@@ -3,14 +3,14 @@ library(dplyr)
 
 raw  = read_tds(URL = 'http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html', 'maca_day') %>%
   tidyr::separate(link,  into = c(NA, NA, 'variable', 'model', 'ensemble', 'scenario', NA, NA, NA, NA), sep = "_") %>%
-  dap_meta()
+  dap_meta() %>%
+  mutate(tiled = "")
 
 catolog = filter(raw, variable == "huss", model == "CNRM-CM5")
 
 dap = dap_crop(catolog = catolog, AOI = NULL, startDate = "2010-01-01")
-print.dap(dap)
 o2  = dap_get(dap)
-terra::plot(o2[[1]])
+terra::plot(c(o2[[1]], o2[[2]]))
 
 
 raw  = read_tds('http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_monthly_catalog.html', "maca_month") %>%

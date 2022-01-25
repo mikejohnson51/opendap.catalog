@@ -15,8 +15,8 @@
 ################################################################################
 
 #' Convert OpenDAP to start/count call
-#' @param dap
-#' @return
+#' @param dap dap description
+#' @return numeric array
 #' @export
 #' @importFrom RNetCDF open.nc close.nc var.inq.nc var.get.nc
 
@@ -46,29 +46,27 @@ dap_to_local = function(dap){
              unpack = TRUE)
 
 }
-
 #' Print Summary Information About a OpenDAP Resource
 #' @description Print summary information about a DAP summary
 #' @param dap data.frame from catolog or dap_crop
-#' @return
 #' @export
 
-print.dap = function(dap){
+dap.summary = function(dap){
 
-  xDim = unique(dap$ncols)
-  yDim = unique(dap$nrows)
+  xy = expand.grid(unique(dap$ncols), unique(dap$nrows))
+  xDim = paste0(xy[,1], collapse = " - ")
+  yDim = paste0(xy[,2], collapse = " - ")
   tDim = unique(dap$Tdim)
-  tI   = unique(data$interval)
+  tI   = unique(dap$interval)
   var =  paste0(dap$varname, " [", dap$units,"]")
 
 cat("vars:  ", paste(">", var, collapse = "\n\t"))
 cat("\nX:     ", formatC(xDim, big.mark = ",", digits = 0, format = "f"), paste0("(", dap$X_name[1], ")"))
 cat("\nY:     ", formatC(yDim, big.mark = ",", digits = 0, format = "f"), paste0("(", dap$Y_name[1], ")"))
 cat("\nT:     ", formatC(tDim, big.mark = ",", digits = 0, format = "f"), paste0("(", dap$T_name[1], " - ", unique(dap$interval), ")"))
-cat("\nvalues:", formatC(xDim * yDim * tDim * length(tDim),
+cat("\nvalues:", formatC(sum(xy[,1]) * sum(xy[,2]) * tDim * length(tDim),
         big.mark = ",", digits = 0, format = "f"), "(vars*X*Y*T)")
 }
-
 
 #' @title Crop DAP file
 #' @description Crop an OpenDAP resource file to a given AOI and time bound
@@ -90,7 +88,6 @@ dap_crop = function(URL       = NULL,
 
   if(!is.null(URL)){
     catolog = read_dap_file(URL, id = "local")
-    catolog = variable_meta(catolog, verbose = FALSE)
   }
 
   if(is.null(startDate) & is.null(endDate)){
@@ -143,17 +140,23 @@ dap_crop = function(URL       = NULL,
 
     AOIspat = terra::vect(AOI)
 
+    make_ext = function(cat){
+      terra::ext(c(
+        min(cat$Xn, cat$X1),
+        max(cat$Xn, cat$X1),
+        min(cat$Yn, cat$Y1),
+        max(cat$Yn, cat$Y1)))
+    }
+
+    bol = sapply(1:nrow(catolog), function(x){  terra::relate(terra::ext(terra::project(AOIspat, catolog$proj[x])), make_ext(catolog[x,]), "intersects")[1,1]})
+
+    catolog = catolog[bol, ]
+
     out = lapply(1:nrow(catolog), function(i){
       tryCatch({
-        terra::intersect(terra::ext(c(min(catolog$Xn[i], catolog$X1[i]),
-                               max(catolog$Xn[i], catolog$X1[i]),
-                               min(catolog$Yn[i], catolog$Y1[i]),
-                               max(catolog$Yn[i], catolog$Y1[i]))),
-                         terra::ext(terra::project(AOIspat, catolog$proj[i])))
+        terra::intersect(make_ext(catolog[i,]), terra::ext(terra::project(AOIspat, catolog$proj[i])))
       }, error = function(e) { NULL }
       )})
-
-    catolog = catolog[!sapply(out, is.null), ]
 
     for(i in 1:nrow(catolog)){
 
@@ -167,8 +170,8 @@ dap_crop = function(URL       = NULL,
       catolog$X[i]   = paste0("[", paste(sort(xs), collapse = ":1:"), "]")
       catolog$X1[i]  = min(X_coords[xs + 1])
       catolog$Xn[i]  = max(X_coords[xs + 1])
-      catolog$Y1[i]  = min(X_coords[ys + 1])
-      catolog$Yn[i]  = max(X_coords[ys + 1])
+      catolog$Y1[i]  = min(Y_coords[ys + 1])
+      catolog$Yn[i]  = max(Y_coords[ys + 1])
       catolog$ncols[i] = abs(diff(xs)) + 1
       catolog$nrows[i] = abs(diff(ys)) + 1
     }
@@ -182,91 +185,123 @@ dap_crop = function(URL       = NULL,
     catolog
 }
 
-
-
 #' Download DAP resource
 #' @param dap data.frame from catolog or dap_crop
-#' @return
+#' @return SpatRaster
 #' @export
 #' @importFrom RNetCDF open.nc var.get.nc
-#' @importFrom terra rast flip src merge
+#' @importFrom foreach foreach `%dopar%`
+#' @importFrom parallel detectCores
+#' @importFrom doParallel registerDoParallel
+#' @importFrom terra src merge
 
 dap_get = function(dap){
 
-  # my.cluster <- parallel::makeCluster(
-  #   parallel::detectCores() - 1,
-  #   type = "PSOCK"
-  # )
+  i <- NULL
+  `%dopar%` <- foreach::`%dopar%`
+  doParallel::registerDoParallel(cores = parallel::detectCores() - 1)
 
-  # suppressWarnings({
-  #     doParallel::registerDoParallel(cl = my.cluster)
-  # })
-
-
-    # var = foreach::foreach(i = 1:nrow(dap)) %dopar% {
-    #   get_data(dap$URL[i], dap$varname[i])
-    # }
-
-  var = lapply(1:nrow(dap), function(i){
-    if(grepl(dap$URL[i], "https")){
-      get_data(URL = dap$URL[i], dap$varname[i])
-    } else {
-      dap_to_local(dap[i,])
+  out = foreach::foreach(i = 1:nrow(dap)) %dopar% {
+      tryCatch({
+        if(grepl("http", dap$URL[i])){
+          get_data(dap[i,])
+        } else {
+          dap_to_local(dap[i,])
+        }
+      }, error = function(e){
+        dap$URL[i]
+      })
     }
 
-  })
-
-  out = list()
-
-  for(i in 1:length(var)){
-
-    resx <- (dap$Xn[i] - dap$X1[i]) / (dap$ncols[i]-1)
-    resy <- (dap$Yn[i] - dap$Y1[i]) / (dap$nrows[i]-1)
-
-    xmin <- dap$X1[i] - 0.5 * resx
-    xmax <- dap$Xn[i] + 0.5 * resx
-    ymin <- dap$Y1[i] - 0.5 * resy
-    ymax <- dap$Yn[i] + 0.5 * resy
-
-    r = terra::rast(xmin = xmin,
-                    xmax = xmax,
-                    ymin = ymin,
-                    ymax = ymax,
-                    nrows = dap$nrows[i],
-                    ncols = dap$ncols[i],
-                    nlyrs = dap$Tdim[i],
-                    crs   = dap$proj[i])
-
-    r[] = var[[i]]
-
-    if(dap$toptobottom[i]){ r =  terra::flip(r) }
-
-    names(r) = seq.POSIXt(as.POSIXct(dap$startDate[i]),
-                          as.POSIXct(dap$endDate[i]),
-                          length.out  = dap$Tdim[i])
-
-    out[[i]] = r
-  }
-
+  out = lapply(1:length(out), function(x){var_to_terra(out[[x]], dap[x,])})
   names(out) =  sub("_$", "", paste0(dap$varname, "_", dap$scenario))
 
-  #parallel::stopCluster(cl = my.cluster)
-  tryCatch(do.call(c, out), error = function(e){ terra::merge(terra::src(out))})
+  if(any(dap$tiled == "XY")){
+    terra::merge(terra::src(out))
+  } else {
+    out
+  }
+}
 
+#' Convert OpenDAP to start/count call
+#' @param dap dap description
+#' @return
+#' @export
+#' @importFrom RNetCDF open.nc close.nc var.inq.nc var.get.nc
+
+dap_to_local = function(dap){
+
+  nc = open.nc(sub("\\?.*", "", dap$URL))
+  on.exit(close.nc(nc))
+
+  k = regmatches(dap$URL, gregexpr("\\[.*?\\]", dap$URL))[[1]]
+  k  <- gsub("[", "", k, fixed = TRUE)
+  k  <- gsub("]", "", k, fixed = TRUE)
+
+  nc_var_info <- var.inq.nc(nc, dap$varname)
+  X_var_info  <- var.inq.nc(nc, dap$X_name)$dimids
+  Y_var_info <- var.inq.nc(nc, dap$Y_name)$dimids
+  T_var_info <- var.inq.nc(nc, dap$T_name)$dimids
+
+  dimid_order <- match(nc_var_info$dimids,
+                       c(T_var_info, Y_var_info, X_var_info))
+
+  start = (as.numeric(sapply(strsplit(k, ":"),"[[",1)) + 1)[dimid_order]
+  count = (c(dap$Tdim, dap$nrows, dap$ncols))[dimid_order]
+
+  var.get.nc(nc, dap$varname,
+             start = start,
+             count = count,
+             unpack = TRUE)
 }
 
 
-# future::plan('multicore', workers = future::availableCores() - 1)
-# var = furrr::future_pmap(dap[, c("URL", "varname")], get_data)
+#' Var Array to Terra
+#' @param var array
+#' @param dap dap description
+#' @return SpatRast
+#' @export
+#' @importFrom terra rast flip
 
+var_to_terra = function(var, dap){
 
+  resx <- (dap$Xn - dap$X1) / (dap$ncols-1)
+  resy <- (dap$Yn - dap$Y1) / (dap$nrows-1)
 
-get_data = function(URL, varname){
-  tryCatch({
-    nc = RNetCDF::open.nc(URL)
-    as.vector(RNetCDF::var.get.nc(nc, varname, unpack = TRUE))
+  xmin <- dap$X1 - 0.5 * resx
+  xmax <- dap$Xn + 0.5 * resx
+  ymin <- dap$Y1 - 0.5 * resy
+  ymax <- dap$Yn + 0.5 * resy
 
-  }, error = function(e){
-    URL
-  })
+  r = terra::rast(xmin = xmin,
+                  xmax = xmax,
+                  ymin = ymin,
+                  ymax = ymax,
+                  nrows = dap$nrows,
+                  ncols = dap$ncols,
+                  nlyrs = dap$Tdim,
+                  crs   = dap$proj)
+
+  r[] = var
+
+  if(dap$toptobottom){ r =  terra::flip(r) }
+
+  names(r) = seq.POSIXt(as.POSIXct(dap$startDate),
+                        as.POSIXct(dap$endDate),
+                        length.out  = dap$Tdim)
+
+  r
+
+}
+
+#' Get DAP Array
+#' @param dap dap description
+#' @return SpatRast
+#' @export
+#' @importFrom RNetCDF open.nc
+
+get_data = function(dap){
+    nc = RNetCDF::open.nc(dap$URL)
+    on.exit(close.nc(nc))
+    as.vector(RNetCDF::var.get.nc(nc, dap$varname, unpack = TRUE))
 }

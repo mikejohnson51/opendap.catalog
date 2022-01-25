@@ -1,11 +1,12 @@
 #' Get XYTV data from DAP URL
 #' @param obj an OpenDap URL or NetCDF object
+#' @param varmeta should variable metadata be appended?
 #' @return data.frame with (varname, X_name, Y_name, T_name)
 #' @export
 #' @importFrom RNetCDF open.nc close.nc
 #' @importFrom ncmeta nc_coord_var
 
-dap_xyxv = function(obj){
+dap_xyzv = function(obj, varmeta = FALSE){
 
   if(class(obj) != "NetCDF"){
     obj   = RNetCDF::open.nc(obj)
@@ -16,7 +17,23 @@ dap_xyxv = function(obj){
   raw = raw[!apply(raw, 1, function(x){any(is.na(x))}), ]
   names(raw) <- c('varname', "X_name", "Y_name", "T_name")
 
-  raw
+  ll = list()
+
+  if(varmeta){
+    for(i in 1:nrow(raw)){
+    ll[[i]] = data.frame(
+      varname = raw$varname[i],
+      units = try_att(obj, raw$varname[i], "units"),
+      long_name = try_att(obj, raw$varname[i], "long_name"))
+    }
+
+
+  merge(raw, do.call(rbind, ll), by = "varname")
+
+  } else {
+    raw
+  }
+
 }
 
 #' Read from a THREDDS catalog HTML page
@@ -45,16 +62,17 @@ read_tds = function(URL, id){
 #' @description Reads an OpenDap resources and returns metadata
 #' @param URL URL to OpenDap resource
 #' @param id character. Uniquely named dataset identifier
+#' @param varmeta should variable metadata be appended?
 #' @return data.frame with (varname, X_name, Y_name, T_name, URL, id), grid, and time
 #' @export
 #' @importFrom RNetCDF open.nc close.nc
 
-read_dap_file  = function(URL, id){
+read_dap_file  = function(URL, id, varmeta = TRUE){
 
   nc   = RNetCDF::open.nc(URL)
   on.exit(close.nc(nc))
 
-  raw = dap_xyxv(nc)
+  raw = dap_xyzv(nc, varmeta = varmeta)
   raw$URL = URL
   raw$id  = id
 
@@ -62,12 +80,12 @@ read_dap_file  = function(URL, id){
 
   raw = merge(raw, .resource_grid(nc, X_name = raw$X_name[1], Y_name = raw$Y_name[1]))
 
-   raw
-
+  raw
 }
 
 #' Add Variable Metadata
 #' @param raw a data.frame
+#' @param verbose should messaging be displayed?
 #' @return data.frame
 #' @export
 #' @importFrom RNetCDF open.nc file.inq.nc var.inq.nc close.nc
@@ -88,7 +106,7 @@ variable_meta = function(raw, verbose = TRUE){
   } else {
 
   res <- by(raw, list(raw$variable), function(x) {
-      c(URL = x$URL[1], varname = x$variable[1], id = x$id[1])
+      c(URL = x$URL[1], variable = x$variable[1], id = x$id[1])
   })
 
   tmp <- data.frame(do.call(rbind, res))
@@ -97,70 +115,16 @@ variable_meta = function(raw, verbose = TRUE){
 
   for(i in 1:nrow(tmp)){
 
-    nc = tryCatch({
-      suppressMessages({
-        RNetCDF::open.nc(paste0(tmp$URL[i], "#fillmismatch"))
-      })
-    }, error = function(e){
-      NULL
-    }
-    )
+    t = dap_xyzv(paste0(tmp$URL[i], "#fillmismatch"))
+    t$variable = tmp$variable[i]
+    ll[[i]] = t
 
-    if(!is.null(nc)){
-
-      if("varname" %in% names(raw)){
-        varnames <- RNetCDF::var.inq.nc(nc, tmp$varname[i])$name
-      } else {
-        nvar <- RNetCDF::file.inq.nc(nc)$nvar
-
-        varnames <- character(nvar)
-
-        for(j in seq_len(nvar)) {
-          varnames[j] <- RNetCDF::var.inq.nc(nc, j-1)$name
-        }
-      }
-
-      if(!is.null(varnames)){
-        name = varnames[!grepl("lat$|lon$|latitude$|longitude$|time$|crs$|day$",
-                               varnames,
-                               ignore.case = TRUE)]
-      } else {
-        name = varnames[i]
-      }
-
-      ll[[i]] = data.frame(
-        variable = tmp$varname[i],
-        varname = name,
-        units = try_att(nc, name, "units"),
-        long_name = try_att(nc, name, "long_name")
-      )
-
-      if(verbose){
-        message("[", tmp$id[i], ":", tmp$varname[i], "] (", i, "/", nrow(tmp), ")")
-      }
-
-      RNetCDF::close.nc(nc)
-
-    } else {
-
-      ll[[i]] = data.frame(
-        variable = raw$variable[i],
-        varname = NA,
-        units = NA,
-        long_name = NA
-      )
-
-      if(verbose){
-        message(basename(raw$URL[i]), " fails")
-      }
+    if(verbose){
+        message("[", tmp$id[i], ":", tmp$variable[i], "] (", i, "/", nrow(tmp), ")")
     }
   }
 
-  out = do.call(rbind, ll)
-
-  if("varname" %in% names(raw)) {  out$varname = NULL }
-
-  return(merge(raw, out, by = "variable"))
+  return(merge(raw, do.call(rbind, ll), by = "variable"))
 
   }
 }
@@ -185,7 +149,7 @@ time_meta = function(raw){
   } else {
 
     res <- by(raw, list(raw$scenario), function(x) {
-      c(URL = x$URL[1], scenario = x$scenario[1], id = x$id[1])
+      c(URL = x$URL[1], scenario = x$scenario[1], id = x$id[1], T_name = x$T_name[1])
     })
 
     tmp <- data.frame(do.call(rbind, res))
@@ -198,7 +162,7 @@ time_meta = function(raw){
 
     nc = RNetCDF::open.nc(paste0(tmp$URL[i], "#fillmismatch"))
 
-    ll[[i]] = data.frame(.resource_time(nc), scenario = tmp$scenario[i])
+    ll[[i]] = data.frame(.resource_time(nc, T_name = tmp$T_name[i]), scenario = tmp$scenario[i])
 
     message("[", tmp$id[i], ":", tmp$scenario[i], "] (", i, "/", nrow(tmp), ")")
     RNetCDF::close.nc(nc)
@@ -215,9 +179,8 @@ time_meta = function(raw){
     raw  = merge(raw, do.call(rbind, ll), by = "scenario")
   }
 
-   return(raw)
+  return(raw)
   }
-
 }
 
 #' Add Grid Metadata
@@ -247,6 +210,7 @@ grid_meta = function(raw){
 #' @export
 
 dap_meta = function(raw){
+
  raw = variable_meta(raw)
  raw = time_meta(raw)
  raw = grid_meta(raw)

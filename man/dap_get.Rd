@@ -10,7 +10,7 @@ dap_get(dap)
 \item{dap}{data.frame from catolog or dap_crop}
 }
 \value{
-
+SpatRaster
 }
 \description{
 Download DAP resource

@@ -4,12 +4,14 @@
 \alias{read_dap_file}
 \title{Read from a OpenDAP landing page}
 \usage{
-read_dap_file(URL, id)
+read_dap_file(URL, id, varmeta = TRUE)
 }
 \arguments{
 \item{URL}{URL to OpenDap resource}
 
 \item{id}{character. Uniquely named dataset identifier}
+
+\item{varmeta}{should variable metadata be appended?}
 }
 \value{
 data.frame with (varname, X_name, Y_name, T_name, URL, id), grid, and time

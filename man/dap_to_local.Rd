@@ -5,10 +5,19 @@
 \title{Convert OpenDAP to start/count call}
 \usage{
 dap_to_local(dap)
+
+dap_to_local(dap)
+}
+\arguments{
+\item{dap}{dap description}
 }
 \value{
+numeric array
+
 
 }
 \description{
+Convert OpenDAP to start/count call
+
 Convert OpenDAP to start/count call
 }

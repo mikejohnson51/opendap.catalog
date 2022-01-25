@@ -8,6 +8,8 @@ variable_meta(raw, verbose = TRUE)
 }
 \arguments{
 \item{raw}{a data.frame}
+
+\item{verbose}{should messaging be displayed?}
 }
 \value{
 data.frame
