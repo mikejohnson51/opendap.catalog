@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{dap_xyxv}
 \alias{dap_xyxv}
-\title{Retrieve XYTV data from DAP URL}
+\title{Get XYTV data from DAP URL}
 \usage{
-dap_xyxv(url)
+dap_xyxv(obj)
 }
 \arguments{
-\item{url}{a OpenDap URL}
+\item{obj}{an OpenDap URL or NetCDF object}
 }
 \value{
 data.frame with (varname, X_name, Y_name, T_name)
 }
 \description{
-Retrieve XYTV data from DAP URL
+Get XYTV data from DAP URL
 }

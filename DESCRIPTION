@@ -8,7 +8,6 @@ Description: What the package does (one paragraph).
 Depends: 
     R(>= 3.5.0)
 Imports: 
-    dplyr,
     ncmeta,
     RNetCDF,
     rvest,

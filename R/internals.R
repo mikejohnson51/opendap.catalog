@@ -1,17 +1,40 @@
+#' Parse Dates from duratoon and interval
+#' @param duration time durations
+#' @param interval time interval
+#' @export
+
+parse_date = function(duration, interval){
+
+  d = strsplit(duration, "/")[[1]]
+
+  if(d[2] == ".."){ d[2] = Sys.Date() }
+
+  #TODO move to dap_meta?
+  if(interval == "1 months"){
+    d[1] = format(as.POSIXct(d[1], tz = "UTC"), "%Y-%m-01")
+  }
+
+  seq.POSIXt(as.POSIXct(d[1], tz = "UTC"),
+             as.POSIXct(d[2], tz = "UTC"),
+             interval)
+}
+
+
 #' Extract grid metadata from NC Pointer
 #' @param nc "NetCDF" object which points to the NetCDF dataset. Found with RNetCDF::open.nc.
 #' @param X_name Name of X diminion. If NULL it is found
 #' @param Y_name Name of Y diminion. If NULL it is found
+#' @param stopIfNotEqualSpaced stop if not equal space grid
 #' @return list with (proj, ext, and dimension)
 #' @importFrom ncmeta nc_coord_var nc_grid_mapping_atts nc_gm_to_prj
 #' @importFrom RNetCDF var.get.nc
 
-.resource_grid = function(nc, X_name = NULL, Y_name = NULL){
+.resource_grid = function(nc, X_name = NULL, Y_name = NULL, stopIfNotEqualSpaced = TRUE){
 
   if(is.null(X_name) | is.null(Y_name)){
-    atts = ncmeta::nc_coord_var(nc)
-    X_name   = omit.na(unique(atts$X))
-    Y_name   = omit.na(unique(atts$Y))
+    atts = dap_xyxv(nc)
+    X_name   = omit.na(unique(atts$X_name))
+    Y_name   = omit.na(unique(atts$Y_name))
   }
 
   nc_grid_mapping <- suppressWarnings(ncmeta::nc_grid_mapping_atts(nc))
@@ -38,17 +61,75 @@
     }
   }
 
-  X    = RNetCDF::var.get.nc(nc, X_name)
-  Y    = RNetCDF::var.get.nc(nc, Y_name)
+  ncols <-  RNetCDF::dim.inq.nc(nc, X_name)$len
+  nrows <-  RNetCDF::dim.inq.nc(nc, Y_name)$len
 
-  if(degree & any(X > 180.001)){X = X - 360}
+  xx <- try(RNetCDF::var.get.nc(nc, X_name))
 
-  list(
+  if (inherits(xx, "try-error")) {
+    xx <- seq_len(ncols)
+  }
+
+  rs <- xx[-length(xx)] - xx[-1]
+
+  if (! isTRUE ( all.equal( min(rs), max(rs), tolerance = 0.025, scale= abs(min(rs))) ) ) {
+    if (is.na(stopIfNotEqualSpaced)) {
+      warning('cells are not equally spaced; you should extract values as points')
+    } else if (stopIfNotEqualSpaced) {
+      stop('cells are not equally spaced; you should extract values as points')
+    }
+  }
+
+  if(any(xx > 180) & degree) { xx = xx - 360}
+
+  xrange <- c(min(xx), max(xx))
+  resx <- (xrange[2] - xrange[1]) / (ncols-1)
+  X1 <- head(xx, 1)
+  Xn <- tail(xx, 1)
+  rm(xx)
+
+  yy <- try(RNetCDF::var.get.nc(nc, Y_name))
+
+  if (inherits(yy, "try-error")) {
+    yy <- seq_len(nrows)
+  }
+
+  Y1 <- head(yy, 1)
+  Yn <- tail(yy, 1)
+
+  rs <- yy[-length(yy)] - yy[-1]
+
+  if (! isTRUE ( all.equal( min(rs), max(rs), tolerance=0.025, scale= abs(min(rs))) ) ) {
+    if (is.na(stopIfNotEqualSpaced)) {
+      warning('cells are not equally spaced; you should extract values as points')
+    } else if (stopIfNotEqualSpaced) {
+      stop('cells are not equally spaced; you should extract values as points')
+    }
+  }
+
+  yrange <- c(min(yy), max(yy))
+  resy <- (yrange[2] - yrange[1]) / (nrows-1)
+
+  if (yy[1] > yy[length(yy)]) {
+    toptobottom  <- FALSE
+  } else {
+    toptobottom <- TRUE
+  }
+
+  rm(yy)
+
+ data.frame(
     proj = proj,
-    ext = c(min(X), max(X), min(Y), max(Y)),
-    dimension = c(length(X), length(Y))
-  )
-
+    # xmin, xmax, ymin, ymax
+    X1 = X1,
+    Xn = Xn,
+    Y1 = Y1,
+    Yn = Yn,
+    resX = resx,
+    resY = resy,
+    ncols = ncols,
+    nrows = nrows,
+    toptobottom = toptobottom)
 }
 
 #' Extract time metadata from NC Pointer
@@ -61,7 +142,7 @@
 .resource_time = function(nc, T_name = NULL){
 
   if(is.null(T_name) ){
-    atts = ncmeta::nc_coord_var(nc)
+    atts     = ncmeta::nc_coord_var(nc)
     T_name   = omit.na(unique(atts$T))
   }
 
@@ -73,20 +154,20 @@
 
   dT = diff(time_steps)
 
-  g = expand.grid(unique(dT), units(dT)) %>%
-    data.frame() %>%
-    mutate(n = as.numeric(table(dT)))
+  g = data.frame(expand.grid(unique(dT), units(dT)))
+  g = g[order(g$Var1),]
+  g$n = as.numeric(table(dT))
 
   names(g) = c("value", "interval", "n")
 
   if(nrow(g) > 1 & all(g$value %in% c(28,29,30,31))){
     g = data.frame(value = 1, interval = "months")
   } else {
-    g = dplyr::slice_max(g, n)
+    g = g[which.max(g$n), ]
   }
 
   #If time is within 5 days of today then we call the range Open
-  maxDate = ifelse(max(time_steps)  >= Sys.time() - (5*86400) & max(time_steps)  <= Sys.time() +1 ,
+  maxDate = ifelse(max(time_steps)  >= Sys.time() - (5*86400) & max(time_steps)  <= Sys.time() + 1 ,
                    "..",
                    as.character(max(time_steps)))
 
@@ -96,12 +177,12 @@
 
   if(length(int) == 0){int = "0"}
 
-  list(#Tmin = min(time_steps),
-    #Tmax = max(time_steps),
+  list(
     duration = paste0(min(time_steps), "/", maxDate),
     interval = int,
     nT   = nT
   )
+
 }
 
 #' TryCatch around RNetCDF::att.get.nc()

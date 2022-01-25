@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-[![Dependencies](https://img.shields.io/badge/dependencies-6/31-orange?style=flat)](#)
+[![Dependencies](https://img.shields.io/badge/dependencies-5/32-orange?style=flat)](#)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit/)
 [![Website
@@ -58,27 +58,6 @@ use `read_tds`:
 tds = read_tds(URL = 'http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_MET_aggregated_catalog.html', 
                id = "gridmet") 
 head(tds)
-#>                                  link
-#> 1   agg_met_pr_1979_CurrentYear_CONUS
-#> 2 agg_met_rmax_1979_CurrentYear_CONUS
-#> 3 agg_met_rmin_1979_CurrentYear_CONUS
-#> 4  agg_met_sph_1979_CurrentYear_CONUS
-#> 5 agg_met_srad_1979_CurrentYear_CONUS
-#> 6   agg_met_th_1979_CurrentYear_CONUS
-#>                                                                                               URL
-#> 1   http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_pr_1979_CurrentYear_CONUS.nc
-#> 2 http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_rmax_1979_CurrentYear_CONUS.nc
-#> 3 http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_rmin_1979_CurrentYear_CONUS.nc
-#> 4  http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_sph_1979_CurrentYear_CONUS.nc
-#> 5 http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_srad_1979_CurrentYear_CONUS.nc
-#> 6   http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_th_1979_CurrentYear_CONUS.nc
-#>        id
-#> 1 gridmet
-#> 2 gridmet
-#> 3 gridmet
-#> 4 gridmet
-#> 5 gridmet
-#> 6 gridmet
 ```
 
 ### Aggregated files
@@ -102,6 +81,55 @@ head(tds)
 | proj      | The spatial projection of the dataset                       | +proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs” |
 | ext       | The spatial extent of the dataset (xmin, xmax, ymin, ymax)  | c(-124.77, -67.06, 25.06, 49.40)                                |
 | dimension | Variable as described by data resource                      | c(1386, 585)                                                    |
+
+# Use Cases
+
+## Remote Resource
+
+### BCSD
+
+``` r
+library(terra)
+
+AOI <- AOI::aoi_get(state = "FL", county = "all")
+
+url <- "https://cida.usgs.gov/thredds/dodsC/bcsd_obs"
+
+dap = dap_crop(URL = url, AOI = AOI, startDate = "1995-01-01")
+
+print.dap(dap)
+
+out = dap_get(dap[1,])
+
+plot(out$pr)
+```
+
+## Local Resource
+
+### Nex>\>
+
+## Remote Spatially tiled reosouces
+
+``` r
+url <- '/Users/mjohnson/Downloads/NEXGDM_srad_2020_v100.nc'
+file.size(url)
+
+dap = dap_crop(URL = '/Users/mjohnson/Downloads/NEXGDM_srad_2020_v100.nc',
+               AOI = AOI,
+               startDate = "2020-01-01",
+              endDate = "2020-01-05")  
+
+
+out = dap_get(dap)
+
+plot(out$srad)
+```
+
+### MODIS
+
+## Remote Temportally tiled reources
+
+### LOCA
 
 # Uses
 

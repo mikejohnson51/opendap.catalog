@@ -4,7 +4,7 @@
 \alias{.resource_grid}
 \title{Extract grid metadata from NC Pointer}
 \usage{
-.resource_grid(nc, X_name = NULL, Y_name = NULL)
+.resource_grid(nc, X_name = NULL, Y_name = NULL, stopIfNotEqualSpaced = TRUE)
 }
 \arguments{
 \item{nc}{"NetCDF" object which points to the NetCDF dataset. Found with RNetCDF::open.nc.}
@@ -12,6 +12,8 @@
 \item{X_name}{Name of X diminion. If NULL it is found}
 
 \item{Y_name}{Name of Y diminion. If NULL it is found}
+
+\item{stopIfNotEqualSpaced}{stop if not equal space grid}
 }
 \value{
 list with (proj, ext, and dimension)

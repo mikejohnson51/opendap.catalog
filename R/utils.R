@@ -1,27 +1,22 @@
-#' Retrieve XYTV data from DAP URL
-#' @param url a OpenDap URL
+#' Get XYTV data from DAP URL
+#' @param obj an OpenDap URL or NetCDF object
 #' @return data.frame with (varname, X_name, Y_name, T_name)
 #' @export
-#' @importFrom dplyr filter select
 #' @importFrom RNetCDF open.nc close.nc
 #' @importFrom ncmeta nc_coord_var
 
-dap_xyxv = function(url){
+dap_xyxv = function(obj){
 
-  .data <- NULL
+  if(class(obj) != "NetCDF"){
+    obj   = RNetCDF::open.nc(obj)
+    on.exit(close.nc(obj))
+  }
 
-  nc   = RNetCDF::open.nc(url)
+  raw = ncmeta::nc_coord_var(obj)[, c('variable', 'X','Y','T')]
+  raw = raw[!apply(raw, 1, function(x){any(is.na(x))}), ]
+  names(raw) <- c('varname', "X_name", "Y_name", "T_name")
 
-  atts = ncmeta::nc_coord_var(nc)
-
-  T_name   = omit.na(unique(atts$T))
-  X_name   = omit.na(unique(atts$X))
-  Y_name   = omit.na(unique(atts$Y))
-
-  ######
-
-  raw = filter(atts, .data$X == X_name, .data$Y == Y_name, .data$T == T_name) %>%
-    select(varname = .data$variable, X_name = .data$X, Y_name = .data$Y, T_name = .data$T)
+  raw
 }
 
 #' Read from a THREDDS catalog HTML page
@@ -31,26 +26,20 @@ dap_xyxv = function(url){
 #' @return data.frame with (link, URL, id)
 #' @export
 #' @importFrom rvest read_html html_nodes html_attr
-#' @importFrom dplyr mutate filter
 
 read_tds = function(URL, id){
 
-  .data <- NULL
+  dat = read_html(URL)
+  dat = html_nodes(dat, "a")
+  dat = data.frame(link = html_attr(dat, "href"), id = id)
 
-  dat = read_html(URL) %>%
-    html_nodes("a") %>%
-    html_attr("href") %>%
-    data.frame()
+  dat$link =  gsub(".*=","", dat$link)
 
-  names(dat) = "link"
+  dat$URL = paste0(dirname(URL), "/dodsC/", dat$link, ".nc")
 
-  dat %>%
-    mutate(link =  gsub(".*=","", .data$link),
-           URL = paste0(dirname(URL), "/dodsC/", .data$link, ".nc"),
-           id = !!id) %>%
-    filter(!grepl("http|https|html", .data$link))
+  dat[!grepl("http|https|html", dat$link),]
+
 }
-
 
 #' Read from a OpenDAP landing page
 #' @description Reads an OpenDap resources and returns metadata
@@ -58,43 +47,23 @@ read_tds = function(URL, id){
 #' @param id character. Uniquely named dataset identifier
 #' @return data.frame with (varname, X_name, Y_name, T_name, URL, id), grid, and time
 #' @export
-#' @importFrom RNetCDF open.nc
-#' @importFrom ncmeta nc_coord_var
-#' @importFrom dplyr mutate filter select left_join
+#' @importFrom RNetCDF open.nc close.nc
 
 read_dap_file  = function(URL, id){
 
-  .data <- NULL
-
   nc   = RNetCDF::open.nc(URL)
+  on.exit(close.nc(nc))
 
-  atts = ncmeta::nc_coord_var(nc) %>%
-    dplyr::select(variable, X,Y,T)
+  raw = dap_xyxv(nc)
+  raw$URL = URL
+  raw$id  = id
 
-  raw = filter(atts,  !apply(atts, 1, function(x){any(is.na(x))}))
+  raw = merge(raw,  data.frame(.resource_time(nc, raw$T_name[1]), id = id) , by = 'id')
 
-  T_name   = omit.na(unique(raw$T))
-  X_name   = omit.na(unique(raw$X))
-  Y_name   = omit.na(unique(raw$Y))
+  raw = merge(raw, .resource_grid(nc, X_name = raw$X_name[1], Y_name = raw$Y_name[1]))
 
-  raw = raw %>%
-    select(varname = .data$variable, X_name = .data$X, Y_name = .data$Y, T_name = .data$T) %>%
-    mutate(URL = URL, id = !!id)
+   raw
 
-  time = data.frame(.resource_time(nc, T_name)) %>%
-    mutate(id =!!id)
-
-  raw = left_join(raw, time, by = "id")
-
-  g = .resource_grid(nc, X_name, Y_name)
-
-  raw$proj = g$proj
-  raw$ext  = I(list(g$ext))
-  raw$dimension  = I(list(g$dimension))
-
-  close.nc(nc)
-
-  raw
 }
 
 #' Add Variable Metadata
@@ -102,24 +71,27 @@ read_dap_file  = function(URL, id){
 #' @return data.frame
 #' @export
 #' @importFrom RNetCDF open.nc file.inq.nc var.inq.nc close.nc
-#' @importFrom dplyr bind_rows right_join group_by slice ungroup
 
-variable_meta = function(raw){
+variable_meta = function(raw, verbose = TRUE){
 
   if(!"variable" %in% names(raw)){
-    stop("raw must include variable column")
+    warning("raw must include variable column")
+    if(!"variable" %in% names(raw)){
+      warning("trying varname. Chance of failure...")
+      raw$variable = raw$varname
+    }
   }
 
-  if(all(c('varname', 'units') %in% names(raw))){
-    message("Variable metadata already exists")
+  if(all(c('units', "long_name") %in% names(raw))){
+    if(verbose){ message("Variable metadata already exists") }
     return(raw)
   } else {
 
-  .data <- NULL
+  res <- by(raw, list(raw$variable), function(x) {
+      c(URL = x$URL[1], varname = x$variable[1], id = x$id[1])
+  })
 
-  tmp = group_by(raw, .data$variable) %>%
-    slice(1) %>%
-    ungroup()
+  tmp <- data.frame(do.call(rbind, res))
 
   ll = list()
 
@@ -157,12 +129,16 @@ variable_meta = function(raw){
       }
 
       ll[[i]] = data.frame(
-        variable = tmp$variable[i],
+        variable = tmp$varname[i],
         varname = name,
-        units = try_att(nc, name, "units")
+        units = try_att(nc, name, "units"),
+        long_name = try_att(nc, name, "long_name")
       )
 
-      message("[", tmp$id[i], ":", tmp$variable[i], "] (", i, "/", nrow(tmp), ")")
+      if(verbose){
+        message("[", tmp$id[i], ":", tmp$varname[i], "] (", i, "/", nrow(tmp), ")")
+      }
+
       RNetCDF::close.nc(nc)
 
     } else {
@@ -170,21 +146,21 @@ variable_meta = function(raw){
       ll[[i]] = data.frame(
         variable = raw$variable[i],
         varname = NA,
-        units = NA
+        units = NA,
+        long_name = NA
       )
 
-      message(basename(raw$URL[i]), " fails")
+      if(verbose){
+        message(basename(raw$URL[i]), " fails")
+      }
     }
   }
 
-  if("varname" %in% names(raw)) {
-    out = bind_rows(ll) %>%
-      select(-.data$varname)
-  } else {
-    out = bind_rows(ll)
-  }
+  out = do.call(rbind, ll)
 
-  return(right_join(out, raw, by = "variable"))
+  if("varname" %in% names(raw)) {  out$varname = NULL }
+
+  return(merge(raw, out, by = "variable"))
 
   }
 }
@@ -194,7 +170,6 @@ variable_meta = function(raw){
 #' @return data.frame
 #' @export
 #' @importFrom RNetCDF open.nc close.nc
-#' @importFrom dplyr mutate
 
 time_meta = function(raw){
 
@@ -203,17 +178,18 @@ time_meta = function(raw){
    return(raw)
   } else {
 
-  .data <- NULL
-
   flag = !"scenario" %in% names(raw)
 
   if(flag) {
     tmp = raw[1,]
   } else {
-    tmp = raw %>%
-      group_by(.data$scenario) %>%
-      slice(1) %>%
-      ungroup()
+
+    res <- by(raw, list(raw$scenario), function(x) {
+      c(URL = x$URL[1], scenario = x$scenario[1], id = x$id[1])
+    })
+
+    tmp <- data.frame(do.call(rbind, res))
+
   }
 
   ll = list()
@@ -222,8 +198,7 @@ time_meta = function(raw){
 
     nc = RNetCDF::open.nc(paste0(tmp$URL[i], "#fillmismatch"))
 
-    ll[[i]] = as.data.frame(.resource_time(nc)) %>%
-      mutate(scenario = tmp$scenario[i])
+    ll[[i]] = data.frame(.resource_time(nc), scenario = tmp$scenario[i])
 
     message("[", tmp$id[i], ":", tmp$scenario[i], "] (", i, "/", nrow(tmp), ")")
     RNetCDF::close.nc(nc)
@@ -237,8 +212,7 @@ time_meta = function(raw){
     raw$nT = ll[[1]]$nT
 
   } else {
-    raw  = bind_rows(ll) %>%
-      right_join(raw, by = "scenario")
+    raw  = merge(raw, do.call(rbind, ll), by = "scenario")
   }
 
    return(raw)
@@ -254,23 +228,16 @@ time_meta = function(raw){
 
 grid_meta = function(raw){
 
-  if(all(c('T_name', 'X_name', 'Y_name', 'dimension', 'ext', 'proj') %in% names(raw))){
+  if(all(c('T_name', 'X_name', 'Y_name', 'nrows', 'ncols', 'ext', 'proj') %in% names(raw))){
     message("Grid metadata already exists")
     return(raw)
   } else {
     url = paste0(raw$URL[1], "#fillmismatch")
-    o = dap_xyxv(url)
     nc = RNetCDF::open.nc(url)
     g = .resource_grid(nc)
-    raw$proj = g$proj
-    raw$ext  = I(list(g$ext))
-    raw$dimension  = I(list(g$dimension))
-    raw$X_name = o$X_name
-    raw$Y_name = o$T_name
-    raw$T_name = o$X_name
     RNetCDF::close.nc(nc)
 
-    return(raw)
+    return(cbind(raw, g))
   }
 }
 
@@ -278,10 +245,11 @@ grid_meta = function(raw){
 #' @param raw a data.frame
 #' @return data.frame
 #' @export
-#' @importFrom dplyr `%>%`
 
 dap_meta = function(raw){
- variable_meta(raw) %>%
-    time_meta() %>%
-    grid_meta()
+ raw = variable_meta(raw)
+ raw = time_meta(raw)
+ raw = grid_meta(raw)
+
+ raw
 }

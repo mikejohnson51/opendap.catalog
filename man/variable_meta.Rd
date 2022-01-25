@@ -4,7 +4,7 @@
 \alias{variable_meta}
 \title{Add Variable Metadata}
 \usage{
-variable_meta(raw)
+variable_meta(raw, verbose = TRUE)
 }
 \arguments{
 \item{raw}{a data.frame}
