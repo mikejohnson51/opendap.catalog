@@ -16,22 +16,31 @@
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/reference/dap.summary.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dap_crop.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dap_get.html</loc>
+  </url>
+  <url>
     <loc>/reference/dap_meta.html</loc>
   </url>
   <url>
-    <loc>/reference/dap_xyxv.html</loc>
+    <loc>/reference/dap_to_local.html</loc>
   </url>
   <url>
-    <loc>/reference/dot-local_reference_extent.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dot-local_time_extent.html</loc>
+    <loc>/reference/dap_xyzv.html</loc>
   </url>
   <url>
     <loc>/reference/dot-resource_grid.html</loc>
   </url>
   <url>
     <loc>/reference/dot-resource_time.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_data.html</loc>
   </url>
   <url>
     <loc>/reference/grid_meta.html</loc>
@@ -56,6 +65,9 @@
   </url>
   <url>
     <loc>/reference/try_att.html</loc>
+  </url>
+  <url>
+    <loc>/reference/var_to_terra.html</loc>
   </url>
   <url>
     <loc>/reference/variable_meta.html</loc>
