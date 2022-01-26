@@ -105,7 +105,7 @@ system.time({
 #> Warning in getGeoDatum(gm): Didn't find an inverse flattening value, assuming
 #> WGS84 298.257223563
 #>    user  system elapsed 
-#>   0.715   0.092   0.818
+#>   0.653   0.074   0.739
 
 dap.summary(dap)
 #> vars:   > srad [MJ/day]
@@ -138,7 +138,7 @@ system.time({
   mod = dap_get(dap)
 })
 #>    user  system elapsed 
-#>   4.286   1.063   9.945
+#>   4.370   1.154   8.288
 
 dap.summary(dap)
 #> vars:   > PET_500m [kg/m^2/8day]
@@ -153,4 +153,47 @@ terra::plot(mod)
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" /> ##
 Remote Temportally tiled reources
 
+…
+
 ### LOCA
+
+…
+
+## NGEN focus?
+
+### January ET for Florida counties
+
+``` r
+ref = readRDS('src/modis_map.rds') |>
+  dplyr::filter(id == 'mod16', variable == 'ET_500m') |> 
+  dplyr::mutate(tiled = "XY")
+
+AOI = AOI::aoi_get(state = "FL", county = 'all')
+
+system.time({
+  dap = dap_crop(catolog = ref, AOI = AOI,
+                 startDate = "2020-01-01", endDate = "2020-01-31")
+  
+  mod = dap_get(dap)
+})
+#>    user  system elapsed 
+#>   5.129   1.462   9.394
+
+system.time({
+ agg = zonal::execute_zonal(mod, AOI, "geoid")
+})
+#>    user  system elapsed 
+#>   2.537   0.404   3.001
+
+plot(agg[grep("V", names(agg))])
+```
+
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+
+``` r
+aggMax = zonal::execute_zonal(mod, AOI, "geoid", FUN = "max")
+
+plot(aggMax[grep("V", names(aggMax))])
+```
+
+<img src="man/figures/README-unnamed-chunk-6-2.png" width="100%" />

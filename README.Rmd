@@ -111,7 +111,39 @@ terra::plot(mod)
 ```
 ## Remote Temportally tiled reources
 
+...
+
 ### LOCA
 
+...
 
+
+## NGEN focus?
+### January ET for Florida counties
+
+```{r}
+ref = readRDS('src/modis_map.rds') |>
+  dplyr::filter(id == 'mod16', variable == 'ET_500m') |> 
+  dplyr::mutate(tiled = "XY")
+
+AOI = AOI::aoi_get(state = "FL", county = 'all')
+
+system.time({
+  dap = dap_crop(catolog = ref, AOI = AOI,
+                 startDate = "2020-01-01", endDate = "2020-01-31")
+  
+  mod = dap_get(dap)
+})
+
+system.time({
+ agg = zonal::execute_zonal(mod, AOI, "geoid")
+})
+
+plot(agg[grep("V", names(agg))])
+
+aggMax = zonal::execute_zonal(mod, AOI, "geoid", FUN = "max")
+
+plot(aggMax[grep("V", names(aggMax))])
+
+```
 
