@@ -7,11 +7,16 @@ parse_date = function(duration, interval){
 
   d = strsplit(duration, "/")[[1]]
 
-  if(d[2] == ".."){ d[2] = Sys.Date() }
+  if(d[2] == ".."){ d[2] = as.character(Sys.Date()) }
 
   #TODO move to dap_meta?
   if(interval == "1 months"){
     d[1] = format(as.POSIXct(d[1], tz = "UTC"), "%Y-%m-01")
+  }
+
+  if(grepl("hour", interval)){
+    d[1] = format(as.POSIXct(d[1], tz = "UTC"), "%Y-%m-%d %H:%M:%S")
+    d[2] = format(as.POSIXct(d[2], tz = "UTC"), "%Y-%m-%d %H:%M:%S")
   }
 
   seq.POSIXt(as.POSIXct(d[1], tz = "UTC"),

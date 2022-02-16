@@ -67,6 +67,11 @@ dap = dap_crop(URL = url, AOI = AOI, startDate = "1995-01-01")
 
 dap.summary(dap)
 
+knitr::kable(dap, format="html")
+
+```
+
+```{r}
 bcsd = dap_get(dap = dap[dap$varname == "pr",])
 
 plot(bcsd$pr)
@@ -109,6 +114,7 @@ system.time({
 dap.summary(dap)
 terra::plot(mod)
 ```
+
 ## Remote Temportally tiled reources
 
 ...

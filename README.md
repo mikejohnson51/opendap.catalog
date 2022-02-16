@@ -52,7 +52,8 @@ Lets get data in some different ways for the state of Florida.
 ``` r
 library(opendap.catalog)
 library(terra)
-#> terra 1.5.12
+#> Warning: package 'terra' was built under R version 4.1.2
+#> terra 1.5.17
 
 AOI <- AOI::aoi_get(state = "FL", county = "all")
 plot(AOI$geometry)
@@ -79,12 +80,541 @@ dap.summary(dap)
 #> T:      1 (time - 1 months)
 #> values: 2,976 (vars*X*Y*T)
 
+knitr::kable(dap, format="html")
+```
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+id
+</th>
+<th style="text-align:left;">
+varname
+</th>
+<th style="text-align:left;">
+X_name
+</th>
+<th style="text-align:left;">
+Y_name
+</th>
+<th style="text-align:left;">
+T_name
+</th>
+<th style="text-align:left;">
+units
+</th>
+<th style="text-align:left;">
+long_name
+</th>
+<th style="text-align:left;">
+URL
+</th>
+<th style="text-align:left;">
+duration
+</th>
+<th style="text-align:left;">
+interval
+</th>
+<th style="text-align:right;">
+nT
+</th>
+<th style="text-align:left;">
+proj
+</th>
+<th style="text-align:right;">
+X1
+</th>
+<th style="text-align:right;">
+Xn
+</th>
+<th style="text-align:right;">
+Y1
+</th>
+<th style="text-align:right;">
+Yn
+</th>
+<th style="text-align:right;">
+resX
+</th>
+<th style="text-align:right;">
+resY
+</th>
+<th style="text-align:right;">
+ncols
+</th>
+<th style="text-align:right;">
+nrows
+</th>
+<th style="text-align:left;">
+toptobottom
+</th>
+<th style="text-align:right;">
+Tdim
+</th>
+<th style="text-align:left;">
+startDate
+</th>
+<th style="text-align:left;">
+endDate
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+local
+</td>
+<td style="text-align:left;">
+pr
+</td>
+<td style="text-align:left;">
+longitude
+</td>
+<td style="text-align:left;">
+latitude
+</td>
+<td style="text-align:left;">
+time
+</td>
+<td style="text-align:left;">
+mm/m
+</td>
+<td style="text-align:left;">
+monthly_sum_pr
+</td>
+<td style="text-align:left;">
+<https://cida.usgs.gov/thredds/dodsC/bcsd_obs?pr%5B540:1:540>\]\[0:1:47\]\[296:1:357\]
+</td>
+<td style="text-align:left;">
+1950-01-31/1999-12-31
+</td>
+<td style="text-align:left;">
+1 months
+</td>
+<td style="text-align:right;">
+600
+</td>
+<td style="text-align:left;">
++proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
+</td>
+<td style="text-align:right;">
+-87.6875
+</td>
+<td style="text-align:right;">
+-80.0625
+</td>
+<td style="text-align:right;">
+25.1875
+</td>
+<td style="text-align:right;">
+31.0625
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+62
+</td>
+<td style="text-align:right;">
+48
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+local
+</td>
+<td style="text-align:left;">
+prate
+</td>
+<td style="text-align:left;">
+longitude
+</td>
+<td style="text-align:left;">
+latitude
+</td>
+<td style="text-align:left;">
+time
+</td>
+<td style="text-align:left;">
+mm/d
+</td>
+<td style="text-align:left;">
+monthly_avg_prate
+</td>
+<td style="text-align:left;">
+<https://cida.usgs.gov/thredds/dodsC/bcsd_obs?prate%5B540:1:540>\]\[0:1:47\]\[296:1:357\]
+</td>
+<td style="text-align:left;">
+1950-01-31/1999-12-31
+</td>
+<td style="text-align:left;">
+1 months
+</td>
+<td style="text-align:right;">
+600
+</td>
+<td style="text-align:left;">
++proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
+</td>
+<td style="text-align:right;">
+-87.6875
+</td>
+<td style="text-align:right;">
+-80.0625
+</td>
+<td style="text-align:right;">
+25.1875
+</td>
+<td style="text-align:right;">
+31.0625
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+62
+</td>
+<td style="text-align:right;">
+48
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+local
+</td>
+<td style="text-align:left;">
+tas
+</td>
+<td style="text-align:left;">
+longitude
+</td>
+<td style="text-align:left;">
+latitude
+</td>
+<td style="text-align:left;">
+time
+</td>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:left;">
+monthly_avg_tas
+</td>
+<td style="text-align:left;">
+<https://cida.usgs.gov/thredds/dodsC/bcsd_obs?tas%5B540:1:540>\]\[0:1:47\]\[296:1:357\]
+</td>
+<td style="text-align:left;">
+1950-01-31/1999-12-31
+</td>
+<td style="text-align:left;">
+1 months
+</td>
+<td style="text-align:right;">
+600
+</td>
+<td style="text-align:left;">
++proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
+</td>
+<td style="text-align:right;">
+-87.6875
+</td>
+<td style="text-align:right;">
+-80.0625
+</td>
+<td style="text-align:right;">
+25.1875
+</td>
+<td style="text-align:right;">
+31.0625
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+62
+</td>
+<td style="text-align:right;">
+48
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+local
+</td>
+<td style="text-align:left;">
+tasmax
+</td>
+<td style="text-align:left;">
+longitude
+</td>
+<td style="text-align:left;">
+latitude
+</td>
+<td style="text-align:left;">
+time
+</td>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:left;">
+monthly_avg_tasmax
+</td>
+<td style="text-align:left;">
+<https://cida.usgs.gov/thredds/dodsC/bcsd_obs?tasmax%5B540:1:540>\]\[0:1:47\]\[296:1:357\]
+</td>
+<td style="text-align:left;">
+1950-01-31/1999-12-31
+</td>
+<td style="text-align:left;">
+1 months
+</td>
+<td style="text-align:right;">
+600
+</td>
+<td style="text-align:left;">
++proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
+</td>
+<td style="text-align:right;">
+-87.6875
+</td>
+<td style="text-align:right;">
+-80.0625
+</td>
+<td style="text-align:right;">
+25.1875
+</td>
+<td style="text-align:right;">
+31.0625
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+62
+</td>
+<td style="text-align:right;">
+48
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+local
+</td>
+<td style="text-align:left;">
+tasmin
+</td>
+<td style="text-align:left;">
+longitude
+</td>
+<td style="text-align:left;">
+latitude
+</td>
+<td style="text-align:left;">
+time
+</td>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:left;">
+monthly_avg_tasmin
+</td>
+<td style="text-align:left;">
+<https://cida.usgs.gov/thredds/dodsC/bcsd_obs?tasmin%5B540:1:540>\]\[0:1:47\]\[296:1:357\]
+</td>
+<td style="text-align:left;">
+1950-01-31/1999-12-31
+</td>
+<td style="text-align:left;">
+1 months
+</td>
+<td style="text-align:right;">
+600
+</td>
+<td style="text-align:left;">
++proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
+</td>
+<td style="text-align:right;">
+-87.6875
+</td>
+<td style="text-align:right;">
+-80.0625
+</td>
+<td style="text-align:right;">
+25.1875
+</td>
+<td style="text-align:right;">
+31.0625
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+62
+</td>
+<td style="text-align:right;">
+48
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+local
+</td>
+<td style="text-align:left;">
+wind
+</td>
+<td style="text-align:left;">
+longitude
+</td>
+<td style="text-align:left;">
+latitude
+</td>
+<td style="text-align:left;">
+time
+</td>
+<td style="text-align:left;">
+m/s
+</td>
+<td style="text-align:left;">
+monthly_avg_wind
+</td>
+<td style="text-align:left;">
+<https://cida.usgs.gov/thredds/dodsC/bcsd_obs?wind%5B540:1:540>\]\[0:1:47\]\[296:1:357\]
+</td>
+<td style="text-align:left;">
+1950-01-31/1999-12-31
+</td>
+<td style="text-align:left;">
+1 months
+</td>
+<td style="text-align:right;">
+600
+</td>
+<td style="text-align:left;">
++proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
+</td>
+<td style="text-align:right;">
+-87.6875
+</td>
+<td style="text-align:right;">
+-80.0625
+</td>
+<td style="text-align:right;">
+25.1875
+</td>
+<td style="text-align:right;">
+31.0625
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+0.125
+</td>
+<td style="text-align:right;">
+62
+</td>
+<td style="text-align:right;">
+48
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+<td style="text-align:left;">
+1995-01-01
+</td>
+</tr>
+</tbody>
+</table>
+
+``` r
 bcsd = dap_get(dap = dap[dap$varname == "pr",])
 
 plot(bcsd$pr)
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
 ## Local Resource
 
@@ -105,7 +635,7 @@ system.time({
 #> Warning in getGeoDatum(gm): Didn't find an inverse flattening value, assuming
 #> WGS84 298.257223563
 #>    user  system elapsed 
-#>   0.653   0.074   0.739
+#>   0.852   0.114   1.014
 
 dap.summary(dap)
 #> vars:   > srad [MJ/day]
@@ -117,7 +647,7 @@ dap.summary(dap)
 plot(nexgdm$srad)
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 ## Remote Spatially tiled reosouces
 
@@ -137,8 +667,9 @@ system.time({
   
   mod = dap_get(dap)
 })
+#> Warning: [src] "src" will be removed. It has been renamed to "sprc"
 #>    user  system elapsed 
-#>   4.370   1.154   8.288
+#>   3.994   1.339   8.543
 
 dap.summary(dap)
 #> vars:   > PET_500m [kg/m^2/8day]
@@ -150,8 +681,9 @@ dap.summary(dap)
 terra::plot(mod)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" /> ##
-Remote Temportally tiled reources
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+
+## Remote Temportally tiled reources
 
 …
 
@@ -176,19 +708,20 @@ system.time({
   
   mod = dap_get(dap)
 })
+#> Warning: [src] "src" will be removed. It has been renamed to "sprc"
 #>    user  system elapsed 
-#>   5.129   1.462   9.394
+#>   4.908   2.184  10.430
 
 system.time({
  agg = zonal::execute_zonal(mod, AOI, "geoid")
 })
 #>    user  system elapsed 
-#>   2.537   0.404   3.001
+#>   2.288   0.398   2.729
 
 plot(agg[grep("V", names(agg))])
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
 ``` r
 aggMax = zonal::execute_zonal(mod, AOI, "geoid", FUN = "max")
@@ -196,4 +729,4 @@ aggMax = zonal::execute_zonal(mod, AOI, "geoid", FUN = "max")
 plot(aggMax[grep("V", names(aggMax))])
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-2.png" width="100%" />

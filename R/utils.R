@@ -115,9 +115,14 @@ variable_meta = function(raw, verbose = TRUE){
 
   for(i in 1:nrow(tmp)){
 
-    t = dap_xyzv(paste0(tmp$URL[i], "#fillmismatch"))
-    t$variable = tmp$variable[i]
-    ll[[i]] = t
+    ll[[i]] = tryCatch({
+      t = dap_xyzv(paste0(tmp$URL[i], "#fillmismatch"), varmeta = TRUE)
+      t$variable = tmp$variable[i]
+      t
+    }, error = function(e){
+      NULL
+    })
+
 
     if(verbose){
         message("[", tmp$id[i], ":", tmp$variable[i], "] (", i, "/", nrow(tmp), ")")
@@ -145,6 +150,7 @@ time_meta = function(raw){
   flag = !"scenario" %in% names(raw)
 
   if(flag) {
+    raw$scenario = "total"
     tmp = raw[1,]
   } else {
 
@@ -153,7 +159,6 @@ time_meta = function(raw){
     })
 
     tmp <- data.frame(do.call(rbind, res))
-
   }
 
   ll = list()
@@ -191,7 +196,7 @@ time_meta = function(raw){
 
 grid_meta = function(raw){
 
-  if(all(c('T_name', 'X_name', 'Y_name', 'nrows', 'ncols', 'ext', 'proj') %in% names(raw))){
+  if(all(c('T_name', 'X_name', 'Y_name', 'nrows', 'ncols', 'X1', "Xn", "Y1", "Yn", 'proj') %in% names(raw))){
     message("Grid metadata already exists")
     return(raw)
   } else {

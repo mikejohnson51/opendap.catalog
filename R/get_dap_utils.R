@@ -53,18 +53,19 @@ dap_to_local = function(dap){
 
 dap.summary = function(dap){
 
-  xy = expand.grid(unique(dap$ncols), unique(dap$nrows))
+  xy   = expand.grid(unique(dap$ncols), unique(dap$nrows))
+  cells = prod(xy[,1] * xy[,2])
   xDim = paste0(xy[,1], collapse = " - ")
   yDim = paste0(xy[,2], collapse = " - ")
   tDim = unique(dap$Tdim)
   tI   = unique(dap$interval)
-  var =  paste0(dap$varname, " [", dap$units,"]")
+  var =  paste0(dap$varname, " [", dap$units,"] (", dap$long_name, ")")
 
 cat("vars:  ", paste(">", var, collapse = "\n\t"))
 cat("\nX:     ", formatC(xDim, big.mark = ",", digits = 0, format = "f"), paste0("(", dap$X_name[1], ")"))
 cat("\nY:     ", formatC(yDim, big.mark = ",", digits = 0, format = "f"), paste0("(", dap$Y_name[1], ")"))
 cat("\nT:     ", formatC(tDim, big.mark = ",", digits = 0, format = "f"), paste0("(", dap$T_name[1], " - ", unique(dap$interval), ")"))
-cat("\nvalues:", formatC(sum(xy[,1]) * sum(xy[,2]) * tDim * length(tDim),
+cat("\nvalues:", formatC(cells * tDim * length(var),
         big.mark = ",", digits = 0, format = "f"), "(vars*X*Y*T)")
 }
 
@@ -107,7 +108,9 @@ dap_crop = function(URL       = NULL,
 
       for(i in 1:nrow(catolog)){
 
-        time_steps = parse_date(catolog$duration[i], catolog$interval[i])
+        time_steps = parse_date(duration = catolog$duration[i],
+                                interval = catolog$interval[i])
+
 
         if(startDate >= max(time_steps)){
           out[[i]] = NULL
@@ -197,6 +200,7 @@ dap_crop = function(URL       = NULL,
 
 dap_get = function(dap){
 
+  suppressWarnings({
   i <- NULL
   `%dopar%` <- foreach::`%dopar%`
   doParallel::registerDoParallel(cores = parallel::detectCores() - 1)
@@ -221,6 +225,7 @@ dap_get = function(dap){
   } else {
     out
   }
+  })
 }
 
 #' Convert OpenDAP to start/count call
