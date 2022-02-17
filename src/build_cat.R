@@ -1,8 +1,31 @@
 meta = list()
 library(dplyr)
 
-meta[['maca']] = bind_rows(read_tds('http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html', 'maca_daily'),
-                           read_tds('http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_monthly_catalog.html', "maca_monthly")) %>%
+grid_vars = c('grid.id', 'X_name', 'Y_name', 'X1', 'Xn', 'Y1', 'Yn', 'resX', 'resY', 'ncols', 'nrows', 'proj', "toptobottom")
+
+param_vars = c('id', 'grid.id',  'URL', 'tiled',
+               'variable', 'varname', 'long_name', 'units',
+               'model', 'ensemble', 'scenario',
+               'duration', 'interval', "nT")
+
+split_grids = function(raw){
+  raw$grid.id = ifelse(is.na(raw$grid.id), raw$id, raw$grid.id)
+  distinct(select(raw, grid_vars))
+}
+
+split_params = function(raw){
+  raw$grid.id = ifelse(is.na(raw$grid.id), raw$id, raw$grid.id)
+  select(raw, param_vars)
+}
+
+
+### Params (15): # id, tiled, URL, toptobottom,
+                 # variable, varname, long_name, units, model,ensemble, scenario,
+                 # duration, interval, nT
+### Grid (12): id, X_name, Y_name, T_name, X1, Xn, Y1, Yn, resX, resY, ncols, nrows, proj
+
+meta[['maca']] = bind_rows(read_tds('http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html', 'maca'),
+                           read_tds('http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_monthly_catalog.html', "maca")) %>%
   tidyr::separate(link,  into = c(NA, NA, 'variable', 'model', 'ensemble', 'scenario', NA, NA, NA, NA),
                   sep = "_")  %>%
   dap_meta() %>%
@@ -67,12 +90,12 @@ meta[['prism_monthly']] = read_dap_file(URL = 'https://cida.usgs.gov/thredds/dod
   mutate(variable = varname) %>%
   dap_meta()
 
-meta[['chirps']] = bind_rows(read_dap_file("https://upwell.pfeg.noaa.gov/erddap/griddap/chirps20GlobalMonthlyP05", "chirps_daily"),
-                             read_dap_file("https://upwell.pfeg.noaa.gov/erddap/griddap/chirps20GlobalDailyP05", "chirps_monthly")) %>%
+meta[['chirps']] = bind_rows(read_dap_file("https://upwell.pfeg.noaa.gov/erddap/griddap/chirps20GlobalMonthlyP05", "chirps"),
+                             read_dap_file("https://upwell.pfeg.noaa.gov/erddap/griddap/chirps20GlobalDailyP05", "chirps")) %>%
   mutate(variable = varname) %>%
   dap_meta()
 
-meta[['jplwind']] = read_dap_file(URL = "https://upwell.pfeg.noaa.gov/erddap/griddap/jplCcmp35aWindPentad", "test") %>%
+meta[['jplwind']] = read_dap_file(URL = "https://upwell.pfeg.noaa.gov/erddap/griddap/jplCcmp35aWindPentad", "jplwind") %>%
   mutate(variable = varname) %>%
   dap_meta()
 
@@ -89,19 +112,34 @@ for(i in 1:length(URL)){
   message(i, " of ", length(URL))
 }
 
-meta[['ldas']] = dplyr::bind_rows(ldas)
+
+meta[['ldas']] = bind_rows(ldas) |>
+  group_by(by = nrows) |>
+  mutate(grid.id = paste0("DAS_", cur_group_id())) |>
+  ungroup()
+
 
 # MODIS
 
+meta[['modis']]
 
 # p = read_dap_file(URL = "http://iridl.ldeo.columbia.edu/SOURCES/.OSU/.PRISM/.monthly/dods", "prism")
 #
 # p2 = read_dap_file(URL = "http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.NARR/.three-hourly/.NARR-A/dods", "cru")
 #
 
+nrow(distinct(select(oo, -id)))
+
+oo = bind_rows(meta) %>%
+  split_grids() |>
+  jsonlite::write_json("cat.json", pretty = TRUE)
 
 bind_rows(meta) %>%
-  jsonlite::write_json("cat.json", pretty = TRUE)
+  arrow::write_parquet("cat.parquet")
+
+bind_rows(meta) %>%
+  select(-X_name, -Y_name, -T_name, -X1, -Xn, -Y1, -Yn, -resX, -resY, -ncols, -nrows, -proj) |>
+  jsonlite::write_json("cat_no_grid.json", pretty = TRUE)
 
 
 #jsonlite::fromJSON('https://mikejohnson51.github.io/opendap.catalog/cat.json')

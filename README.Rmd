@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 # opendap.catalog
 
 <!-- badges: start -->
-[![Dependencies](https://img.shields.io/badge/dependencies-7/33-orange?style=flat)](#)
+[![Dependencies](https://img.shields.io/badge/dependencies-8/32-orange?style=flat)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit/)
 [![Website deployment](https://github.com/mikejohnson51/opendap.catalog/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/mikejohnson51/opendap.catalog/actions/workflows/pkgdown.yaml)
 [![LifeCycle](man/figures/lifecycle/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -53,6 +53,8 @@ Lets get data in some different ways for the state of Florida.
 ```{r}
 library(opendap.catalog)
 library(terra)
+library(jsonlite)
+library(dplyr)
 
 AOI <- AOI::aoi_get(state = "FL", county = "all")
 plot(AOI$geometry)
@@ -67,8 +69,7 @@ dap = dap_crop(URL = url, AOI = AOI, startDate = "1995-01-01")
 
 dap.summary(dap)
 
-knitr::kable(dap, format="html")
-
+DT::datatable(dap)
 ```
 
 ```{r}
@@ -98,56 +99,56 @@ plot(nexgdm$srad)
 ### MODIS 
 
 ```{r}
-ref = readRDS('src/modis_map.rds') |>
-  dplyr::filter(id == 'mod16', variable == 'PET_500m') |> 
-  dplyr::mutate(tiled = "XY")
+cat <- read_json('cat_params.json', simplifyVector = TRUE)
 
-nrow(ref) # tiles
+##### Across Space
+modis_ex = filter(cat, id == 'MOD16A2.006', varname == 'PET_500m')
 
-system.time({
-  dap = dap_crop(catolog = ref, AOI = AOI::aoi_get(state = "FL"),
-                 startDate = "2020-01-01", endDate = "2020-01-15")
-  
-  mod = dap_get(dap)
-})
+dap = dap_crop(
+    catolog = modis_ex,
+    AOI = AOI,
+    startDate = "2010-01-01",
+    endDate = "2010-01-31"
+  ) |>
+    dap_get()
 
-dap.summary(dap)
-terra::plot(mod)
+plot(dap)
 ```
 
 ## Remote Temportally tiled reources
 
-...
+```{r}
+maca_ex = filter(cat, id == 'maca_day', variable == 'huss', model == 'BNU-ESM',
+                scenario %in% c("historical", 'rcp85')) 
 
-### LOCA
+dap = dap_crop(catolog = maca_ex, AOI = AOI, 
+                   startDate = "2005-12-25", endDate = "2006-01-05") |> 
+    dap_get()
 
-...
+plot(c(dap$specific_humidity_historical, dap$specific_humidity_rcp85))
+```
 
+```{r}
+nldas_ex = filter(cat, id == 'NLDAS_FORA0125_H.002', varname == 'apcpsfc') 
+
+dap = dap_crop(catolog = nldas_ex, AOI = AOI, 
+                   startDate = "2005-12-25", endDate = "2005-12-25") |> 
+    dap_get()
+
+plot(dap$apcpsfc_NA)
+```
 
 ## NGEN focus?
 ### January ET for Florida counties
 
 ```{r}
-ref = readRDS('src/modis_map.rds') |>
-  dplyr::filter(id == 'mod16', variable == 'ET_500m') |> 
-  dplyr::mutate(tiled = "XY")
-
-AOI = AOI::aoi_get(state = "FL", county = 'all')
-
 system.time({
-  dap = dap_crop(catolog = ref, AOI = AOI,
-                 startDate = "2020-01-01", endDate = "2020-01-31")
-  
-  mod = dap_get(dap)
-})
-
-system.time({
- agg = zonal::execute_zonal(mod, AOI, "geoid")
+ agg = zonal::execute_zonal(dap$apcpsfc_NA, AOI, "geoid")
 })
 
 plot(agg[grep("V", names(agg))])
 
-aggMax = zonal::execute_zonal(mod, AOI, "geoid", FUN = "max")
+aggMax = zonal::execute_zonal(dap$apcpsfc_NA, AOI, "geoid", FUN = "max")
 
 plot(aggMax[grep("V", names(aggMax))])
 

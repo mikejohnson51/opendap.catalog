@@ -1,17 +1,3 @@
-# AOI = AOI::aoi_get(state = "FL", county = "all")
-#
-#
-# data = dap_crop(URL = "https://cida.usgs.gov/thredds/dodsC/bcsd_obs",
-#                 AOI = NULL,
-#                 startDate = "1995-01-01",
-#                 endDate   = "1995-02-05")
-#
-# print.dap(data)
-#
-# ooo = get_dap(data)
-#
-# terra::plot(ooo[[2]])
-
 ################################################################################
 
 #' Convert OpenDAP to start/count call
@@ -46,6 +32,7 @@ dap_to_local = function(dap){
              unpack = TRUE)
 
 }
+
 #' Print Summary Information About a OpenDAP Resource
 #' @description Print summary information about a DAP summary
 #' @param dap data.frame from catolog or dap_crop
@@ -76,19 +63,23 @@ cat("\nvalues:", formatC(cells * tDim * length(var),
 #' @param AOI sf object
 #' @param startDate start date (YYYY-MM-DD)
 #' @param endDate  end date (YYYY- MM-DD)
+#' @param grid_path path to grid json
 #' @details if AOI is NULL no spatial crop is executed. If startDate AND endDate are NULL, no temporal crop is executed. If just endDate is NULL it defaults to the startDate.
 #' @return data.frame
 #' @export
 #' @importFrom terra vect intersect ext project
+#' @importFrom jsonlite read_json
 
 dap_crop = function(URL       = NULL,
                     catolog   = NULL,
                     AOI       = NULL,
                     startDate = NULL,
-                    endDate   = NULL){
+                    endDate   = NULL,
+                    grid_path = '/Users/mjohnson/github/opendap.catalog/cat_grids.json'){
 
   if(!is.null(URL)){
     catolog = read_dap_file(URL, id = "local")
+    catolog$tiled = ""
   }
 
   if(is.null(startDate) & is.null(endDate)){
@@ -98,41 +89,46 @@ dap_crop = function(URL       = NULL,
     catolog = cbind(catolog, data.frame(startDate = tmp[,1], endDate = tmp[,2]))
 
   } else {
-      ### TIME CROP!!
-      if(is.null(endDate)){ endDate = startDate}
+    ### TIME CROP!!
+    if(is.null(endDate)){ endDate = startDate}
 
-      startDate = as.POSIXct(startDate, tz = "UTC")
-      endDate   = as.POSIXct(endDate,   tz = "UTC")
+    if(grepl("hour", catolog$interval[1])){
+      startDate = paste(startDate, "00:00:00")
+      endDate = paste(endDate, "23:00:00")
+    }
 
-      out = list()
+    startDate = as.POSIXct(startDate, tz = "UTC")
+    endDate   = as.POSIXct(endDate,   tz = "UTC")
 
-      for(i in 1:nrow(catolog)){
+    out = list()
 
-        time_steps = parse_date(duration = catolog$duration[i],
-                                interval = catolog$interval[i])
+    for(i in 1:nrow(catolog)){
+
+      time_steps = parse_date(duration = catolog$duration[i],
+                              interval = catolog$interval[i])
 
 
-        if(startDate >= max(time_steps)){
-          out[[i]] = NULL
-        } else {
+      if(startDate >= max(time_steps)){
+        out[[i]] = NULL
+      } else {
 
-          T1 = which.min(abs(time_steps - startDate)) - 1
-          Tn = which.min(abs(time_steps - endDate)) - 1
+        T1 = which.min(abs(time_steps - startDate)) - 1
+        Tn = which.min(abs(time_steps - endDate)) - 1
 
-          out[[i]] = cbind(catolog[i,], data.frame(T = paste0("[",T1, ":1:", Tn, "]"),
-                                               Tdim  =  (Tn -  T1) + 1,
-                                               startDate = time_steps[T1 + 1],
-                                               endDate =   time_steps[Tn + 1]))
+        out[[i]] = cbind(catolog[i,], data.frame(T = paste0("[",T1, ":1:", Tn, "]"),
+                                                 Tdim  =  (Tn -  T1) + 1,
+                                                 startDate = time_steps[T1 + 1],
+                                                 endDate =   time_steps[Tn + 1]))
 
-        }
       }
+    }
 
-     dur = catolog$duration
-     catolog = do.call(rbind, out)
+    dur     = catolog$duration
+    catolog = do.call(rbind, out)
 
-     if(length(catolog) == 0){
+    if(length(catolog) == 0){
       stop("Requested Time not found in ",  unique(dur), call. = FALSE)
-     }
+    }
   }
   #####
 
@@ -151,9 +147,19 @@ dap_crop = function(URL       = NULL,
         max(cat$Yn, cat$Y1)))
     }
 
-    bol = sapply(1:nrow(catolog), function(x){  terra::relate(terra::ext(terra::project(AOIspat, catolog$proj[x])), make_ext(catolog[x,]), "intersects")[1,1]})
+     if(catolog$id[1] != 'local'){
+        grids = jsonlite::read_json(grid_path, simplifyVector = TRUE)
+        grids = grids[grids$grid.id %in% catolog$grid.id, ]
 
-    catolog = catolog[bol, ]
+        if(length(unique(grids$proj)) > 1){
+          bol = sapply(1:nrow(grids), function(x){  terra::relate(terra::ext(terra::project(AOIspat, grids$proj[x])), make_ext(grids[x,]), "intersects")[1,1]})
+        } else {
+          tmp_aoi = terra::project(AOIspat, grids$proj[1])
+          bol = sapply(1:nrow(grids), function(x){  terra::relate(terra::ext(tmp_aoi), make_ext(grids[x,]), "intersects")[1,1]})
+        }
+
+        catolog = merge(catolog, grids[bol, ])
+     }
 
     out = lapply(1:nrow(catolog), function(i){
       tryCatch({
@@ -180,29 +186,36 @@ dap_crop = function(URL       = NULL,
     }
   }
 
+  if(catolog$tiled[1] == "XY"){
+    catolog$URL = paste0(catolog$URL, "/", catolog$tile, ".ncml?", catolog$varname, catolog$T, catolog$Y, catolog$X)
+  } else {
     catolog$URL = paste0(catolog$URL, "?", catolog$varname, catolog$T, catolog$Y, catolog$X)
-    catolog$X = NULL
-    catolog$Y = NULL
-    catolog$T = NULL
+  }
 
-    catolog
+  catolog$X = NULL
+  catolog$Y = NULL
+  catolog$T = NULL
+
+  catolog
 }
+
 
 #' Download DAP resource
 #' @param dap data.frame from catolog or dap_crop
 #' @return SpatRaster
 #' @export
 #' @importFrom RNetCDF open.nc var.get.nc
-#' @importFrom foreach foreach `%dopar%`
-#' @importFrom parallel detectCores
+#' @importFrom terra sprc merge
+#' @importFrom foreach `%dopar%` foreach
 #' @importFrom doParallel registerDoParallel
-#' @importFrom terra src merge
+#' @importFrom parallel detectCores
 
 dap_get = function(dap){
 
   suppressWarnings({
   i <- NULL
   `%dopar%` <- foreach::`%dopar%`
+  #doMC::registerDoMC()
   doParallel::registerDoParallel(cores = parallel::detectCores() - 1)
 
   out = foreach::foreach(i = 1:nrow(dap)) %dopar% {
@@ -217,11 +230,25 @@ dap_get = function(dap){
       })
     }
 
+  # out = list()
+  #
+  # for(i in 1:nrow(dap)){
+  #         out[[i]] = tryCatch({
+  #           if(grepl("http", dap$URL[i])){
+  #             get_data(dap[i,])
+  #           } else {
+  #             dap_to_local(dap[i,])
+  #           }
+  #         }, error = function(e){
+  #           dap$URL[i]
+  #         })
+  # }
+
   out = lapply(1:length(out), function(x){var_to_terra(out[[x]], dap[x,])})
   names(out) =  sub("_$", "", paste0(dap$varname, "_", dap$scenario))
 
   if(any(dap$tiled == "XY")){
-    terra::merge(terra::src(out))
+    terra::merge(terra::sprc(out))
   } else {
     out
   }
@@ -260,8 +287,7 @@ dap_to_local = function(dap){
              unpack = TRUE)
 }
 
-
-#' Var Array to Terra
+#' Variable Array to Terra
 #' @param var array
 #' @param dap dap description
 #' @return SpatRast

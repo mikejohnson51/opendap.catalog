@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_dap_utils.R
 \name{var_to_terra}
 \alias{var_to_terra}
-\title{Var Array to Terra}
+\title{Variable Array to Terra}
 \usage{
 var_to_terra(var, dap)
 }
@@ -15,5 +15,5 @@ var_to_terra(var, dap)
 SpatRast
 }
 \description{
-Var Array to Terra
+Variable Array to Terra
 }

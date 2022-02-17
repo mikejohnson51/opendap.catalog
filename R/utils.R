@@ -154,7 +154,7 @@ time_meta = function(raw){
     tmp = raw[1,]
   } else {
 
-    res <- by(raw, list(raw$scenario), function(x) {
+    res <- by(raw, list(raw$scenario, raw$id), function(x) {
       c(URL = x$URL[1], scenario = x$scenario[1], id = x$id[1], T_name = x$T_name[1])
     })
 
@@ -167,7 +167,9 @@ time_meta = function(raw){
 
     nc = RNetCDF::open.nc(paste0(tmp$URL[i], "#fillmismatch"))
 
-    ll[[i]] = data.frame(.resource_time(nc, T_name = tmp$T_name[i]), scenario = tmp$scenario[i])
+    ll[[i]] = data.frame(.resource_time(nc, T_name = tmp$T_name[i]),
+                         scenario = tmp$scenario[i],
+                         id = tmp$id[i])
 
     message("[", tmp$id[i], ":", tmp$scenario[i], "] (", i, "/", nrow(tmp), ")")
     RNetCDF::close.nc(nc)
@@ -181,7 +183,7 @@ time_meta = function(raw){
     raw$nT = ll[[1]]$nT
 
   } else {
-    raw  = merge(raw, do.call(rbind, ll), by = "scenario")
+    raw  = merge(raw, do.call(rbind, ll), by = c("scenario", "id"))
   }
 
   return(raw)

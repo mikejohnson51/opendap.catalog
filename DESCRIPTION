@@ -10,6 +10,7 @@ Depends:
 Imports: 
     doParallel,
     foreach,
+    jsonlite,
     ncmeta,
     parallel,
     RNetCDF,

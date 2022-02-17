@@ -24,7 +24,6 @@ parse_date = function(duration, interval){
              interval)
 }
 
-
 #' Extract grid metadata from NC Pointer
 #' @param nc "NetCDF" object which points to the NetCDF dataset. Found with RNetCDF::open.nc.
 #' @param X_name Name of X diminion. If NULL it is found

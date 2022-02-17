@@ -9,7 +9,8 @@ dap_crop(
   catolog = NULL,
   AOI = NULL,
   startDate = NULL,
-  endDate = NULL
+  endDate = NULL,
+  grid_path = "/Users/mjohnson/github/opendap.catalog/cat_grids.json"
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ dap_crop(
 \item{startDate}{start date (YYYY-MM-DD)}
 
 \item{endDate}{end date (YYYY- MM-DD)}
+
+\item{grid_path}{path to grid json}
 }
 \value{
 data.frame

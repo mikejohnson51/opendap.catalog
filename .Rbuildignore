@@ -6,4 +6,6 @@
 .github
 docs
 ^.*\.json
+^.*\.parquet
+^.*\.RDS
 src
