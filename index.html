@@ -95,8 +95,22 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mikejohnson51/opendap.catalog" class="external-link">opendap.catalog</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/terra/" class="external-link">terra</a></span><span class="op">)</span>
-<span class="co">#&gt; Warning: package 'terra' was built under R version 4.1.2</span>
-<span class="co">#&gt; terra 1.5.17</span>
+<span class="co">#&gt; terra 1.5.21</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://arxiv.org/abs/1403.2805" class="external-link">jsonlite</a></span><span class="op">)</span>
+<span class="co">#&gt; Warning: package 'jsonlite' was built under R version 4.1.2</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
+<span class="co">#&gt; Warning: package 'dplyr' was built under R version 4.1.2</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: 'dplyr'</span>
+<span class="co">#&gt; The following objects are masked from 'package:terra':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     intersect, src, union</span>
+<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     filter, lag</span>
+<span class="co">#&gt; The following objects are masked from 'package:base':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     intersect, setdiff, setequal, union</span>
 
 <span class="va">AOI</span> <span class="op">&lt;-</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu">aoi_get</span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span>, county <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">AOI</span><span class="op">$</span><span class="va">geometry</span><span class="op">)</span></code></pre></div>
@@ -110,540 +124,19 @@
 <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>URL <span class="op">=</span> <span class="va">url</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, startDate <span class="op">=</span> <span class="st">"1995-01-01"</span><span class="op">)</span>
 
 <span class="fu"><a href="reference/dap.summary.html">dap.summary</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>
-<span class="co">#&gt; vars:   &gt; pr [mm/m]</span>
-<span class="co">#&gt;  &gt; prate [mm/d]</span>
-<span class="co">#&gt;  &gt; tas [C]</span>
-<span class="co">#&gt;  &gt; tasmax [C]</span>
-<span class="co">#&gt;  &gt; tasmin [C]</span>
-<span class="co">#&gt;  &gt; wind [m/s]</span>
+<span class="co">#&gt; vars:   &gt; pr [mm/m] (monthly_sum_pr)</span>
+<span class="co">#&gt;  &gt; prate [mm/d] (monthly_avg_prate)</span>
+<span class="co">#&gt;  &gt; tas [C] (monthly_avg_tas)</span>
+<span class="co">#&gt;  &gt; tasmax [C] (monthly_avg_tasmax)</span>
+<span class="co">#&gt;  &gt; tasmin [C] (monthly_avg_tasmin)</span>
+<span class="co">#&gt;  &gt; wind [m/s] (monthly_avg_wind)</span>
 <span class="co">#&gt; X:      62 (longitude)</span>
 <span class="co">#&gt; Y:      48 (latitude)</span>
 <span class="co">#&gt; T:      1 (time - 1 months)</span>
-<span class="co">#&gt; values: 2,976 (vars*X*Y*T)</span>
+<span class="co">#&gt; values: 17,856 (vars*X*Y*T)</span>
 
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">dap</span>, format<span class="op">=</span><span class="st">"html"</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr>
-<th style="text-align:left;">
-id
-</th>
-<th style="text-align:left;">
-varname
-</th>
-<th style="text-align:left;">
-X_name
-</th>
-<th style="text-align:left;">
-Y_name
-</th>
-<th style="text-align:left;">
-T_name
-</th>
-<th style="text-align:left;">
-units
-</th>
-<th style="text-align:left;">
-long_name
-</th>
-<th style="text-align:left;">
-URL
-</th>
-<th style="text-align:left;">
-duration
-</th>
-<th style="text-align:left;">
-interval
-</th>
-<th style="text-align:right;">
-nT
-</th>
-<th style="text-align:left;">
-proj
-</th>
-<th style="text-align:right;">
-X1
-</th>
-<th style="text-align:right;">
-Xn
-</th>
-<th style="text-align:right;">
-Y1
-</th>
-<th style="text-align:right;">
-Yn
-</th>
-<th style="text-align:right;">
-resX
-</th>
-<th style="text-align:right;">
-resY
-</th>
-<th style="text-align:right;">
-ncols
-</th>
-<th style="text-align:right;">
-nrows
-</th>
-<th style="text-align:left;">
-toptobottom
-</th>
-<th style="text-align:right;">
-Tdim
-</th>
-<th style="text-align:left;">
-startDate
-</th>
-<th style="text-align:left;">
-endDate
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-local
-</td>
-<td style="text-align:left;">
-pr
-</td>
-<td style="text-align:left;">
-longitude
-</td>
-<td style="text-align:left;">
-latitude
-</td>
-<td style="text-align:left;">
-time
-</td>
-<td style="text-align:left;">
-mm/m
-</td>
-<td style="text-align:left;">
-monthly_sum_pr
-</td>
-<td style="text-align:left;">
-<a href="https://cida.usgs.gov/thredds/dodsC/bcsd_obs?pr%5B540:1:540" class="external-link uri">https://cida.usgs.gov/thredds/dodsC/bcsd_obs?pr%5B540:1:540</a>][0:1:47][296:1:357]
-</td>
-<td style="text-align:left;">
-1950-01-31/1999-12-31
-</td>
-<td style="text-align:left;">
-1 months
-</td>
-<td style="text-align:right;">
-600
-</td>
-<td style="text-align:left;">
-+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
-</td>
-<td style="text-align:right;">
--87.6875
-</td>
-<td style="text-align:right;">
--80.0625
-</td>
-<td style="text-align:right;">
-25.1875
-</td>
-<td style="text-align:right;">
-31.0625
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-62
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-local
-</td>
-<td style="text-align:left;">
-prate
-</td>
-<td style="text-align:left;">
-longitude
-</td>
-<td style="text-align:left;">
-latitude
-</td>
-<td style="text-align:left;">
-time
-</td>
-<td style="text-align:left;">
-mm/d
-</td>
-<td style="text-align:left;">
-monthly_avg_prate
-</td>
-<td style="text-align:left;">
-<a href="https://cida.usgs.gov/thredds/dodsC/bcsd_obs?prate%5B540:1:540" class="external-link uri">https://cida.usgs.gov/thredds/dodsC/bcsd_obs?prate%5B540:1:540</a>][0:1:47][296:1:357]
-</td>
-<td style="text-align:left;">
-1950-01-31/1999-12-31
-</td>
-<td style="text-align:left;">
-1 months
-</td>
-<td style="text-align:right;">
-600
-</td>
-<td style="text-align:left;">
-+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
-</td>
-<td style="text-align:right;">
--87.6875
-</td>
-<td style="text-align:right;">
--80.0625
-</td>
-<td style="text-align:right;">
-25.1875
-</td>
-<td style="text-align:right;">
-31.0625
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-62
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-local
-</td>
-<td style="text-align:left;">
-tas
-</td>
-<td style="text-align:left;">
-longitude
-</td>
-<td style="text-align:left;">
-latitude
-</td>
-<td style="text-align:left;">
-time
-</td>
-<td style="text-align:left;">
-C
-</td>
-<td style="text-align:left;">
-monthly_avg_tas
-</td>
-<td style="text-align:left;">
-<a href="https://cida.usgs.gov/thredds/dodsC/bcsd_obs?tas%5B540:1:540" class="external-link uri">https://cida.usgs.gov/thredds/dodsC/bcsd_obs?tas%5B540:1:540</a>][0:1:47][296:1:357]
-</td>
-<td style="text-align:left;">
-1950-01-31/1999-12-31
-</td>
-<td style="text-align:left;">
-1 months
-</td>
-<td style="text-align:right;">
-600
-</td>
-<td style="text-align:left;">
-+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
-</td>
-<td style="text-align:right;">
--87.6875
-</td>
-<td style="text-align:right;">
--80.0625
-</td>
-<td style="text-align:right;">
-25.1875
-</td>
-<td style="text-align:right;">
-31.0625
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-62
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-local
-</td>
-<td style="text-align:left;">
-tasmax
-</td>
-<td style="text-align:left;">
-longitude
-</td>
-<td style="text-align:left;">
-latitude
-</td>
-<td style="text-align:left;">
-time
-</td>
-<td style="text-align:left;">
-C
-</td>
-<td style="text-align:left;">
-monthly_avg_tasmax
-</td>
-<td style="text-align:left;">
-<a href="https://cida.usgs.gov/thredds/dodsC/bcsd_obs?tasmax%5B540:1:540" class="external-link uri">https://cida.usgs.gov/thredds/dodsC/bcsd_obs?tasmax%5B540:1:540</a>][0:1:47][296:1:357]
-</td>
-<td style="text-align:left;">
-1950-01-31/1999-12-31
-</td>
-<td style="text-align:left;">
-1 months
-</td>
-<td style="text-align:right;">
-600
-</td>
-<td style="text-align:left;">
-+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
-</td>
-<td style="text-align:right;">
--87.6875
-</td>
-<td style="text-align:right;">
--80.0625
-</td>
-<td style="text-align:right;">
-25.1875
-</td>
-<td style="text-align:right;">
-31.0625
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-62
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-local
-</td>
-<td style="text-align:left;">
-tasmin
-</td>
-<td style="text-align:left;">
-longitude
-</td>
-<td style="text-align:left;">
-latitude
-</td>
-<td style="text-align:left;">
-time
-</td>
-<td style="text-align:left;">
-C
-</td>
-<td style="text-align:left;">
-monthly_avg_tasmin
-</td>
-<td style="text-align:left;">
-<a href="https://cida.usgs.gov/thredds/dodsC/bcsd_obs?tasmin%5B540:1:540" class="external-link uri">https://cida.usgs.gov/thredds/dodsC/bcsd_obs?tasmin%5B540:1:540</a>][0:1:47][296:1:357]
-</td>
-<td style="text-align:left;">
-1950-01-31/1999-12-31
-</td>
-<td style="text-align:left;">
-1 months
-</td>
-<td style="text-align:right;">
-600
-</td>
-<td style="text-align:left;">
-+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
-</td>
-<td style="text-align:right;">
--87.6875
-</td>
-<td style="text-align:right;">
--80.0625
-</td>
-<td style="text-align:right;">
-25.1875
-</td>
-<td style="text-align:right;">
-31.0625
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-62
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-local
-</td>
-<td style="text-align:left;">
-wind
-</td>
-<td style="text-align:left;">
-longitude
-</td>
-<td style="text-align:left;">
-latitude
-</td>
-<td style="text-align:left;">
-time
-</td>
-<td style="text-align:left;">
-m/s
-</td>
-<td style="text-align:left;">
-monthly_avg_wind
-</td>
-<td style="text-align:left;">
-<a href="https://cida.usgs.gov/thredds/dodsC/bcsd_obs?wind%5B540:1:540" class="external-link uri">https://cida.usgs.gov/thredds/dodsC/bcsd_obs?wind%5B540:1:540</a>][0:1:47][296:1:357]
-</td>
-<td style="text-align:left;">
-1950-01-31/1999-12-31
-</td>
-<td style="text-align:left;">
-1 months
-</td>
-<td style="text-align:right;">
-600
-</td>
-<td style="text-align:left;">
-+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs
-</td>
-<td style="text-align:right;">
--87.6875
-</td>
-<td style="text-align:right;">
--80.0625
-</td>
-<td style="text-align:right;">
-25.1875
-</td>
-<td style="text-align:right;">
-31.0625
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-0.125
-</td>
-<td style="text-align:right;">
-62
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-<td style="text-align:left;">
-1995-01-01
-</td>
-</tr>
-</tbody>
-</table>
+<span class="fu">DT</span><span class="fu">::</span><span class="fu">datatable</span><span class="op">(</span><span class="va">dap</span><span class="op">)</span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-3-1.png" width="100%"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">bcsd</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span>dap <span class="op">=</span> <span class="va">dap</span><span class="op">[</span><span class="va">dap</span><span class="op">$</span><span class="va">varname</span> <span class="op">==</span> <span class="st">"pr"</span>,<span class="op">]</span><span class="op">)</span>
 
@@ -670,10 +163,10 @@ TRUE
 <span class="co">#&gt; Warning in getGeoDatum(gm): Didn't find an inverse flattening value, assuming</span>
 <span class="co">#&gt; WGS84 298.257223563</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   0.852   0.114   1.014</span>
+<span class="co">#&gt;   0.984   0.105   1.215</span>
 
 <span class="fu"><a href="reference/dap.summary.html">dap.summary</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>
-<span class="co">#&gt; vars:   &gt; srad [MJ/day]</span>
+<span class="co">#&gt; vars:   &gt; srad [MJ/day] (Shortwave radiation)</span>
 <span class="co">#&gt; X:      807 (x)</span>
 <span class="co">#&gt; Y:      693 (y)</span>
 <span class="co">#&gt; T:      4 (time - 1 days)</span>
@@ -689,43 +182,45 @@ TRUE
 <h3 id="modis">MODIS<a class="anchor" aria-label="anchor" href="#modis"></a>
 </h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">ref</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'src/modis_map.rds'</span><span class="op">)</span> |&gt;
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">'mod16'</span>, <span class="va">variable</span> <span class="op">==</span> <span class="st">'PET_500m'</span><span class="op">)</span> |&gt; 
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>tiled <span class="op">=</span> <span class="st">"XY"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/read_json.html" class="external-link">read_json</a></span><span class="op">(</span><span class="st">'cat_params.json'</span>, simplifyVector <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ref</span><span class="op">)</span> <span class="co"># tiles</span>
-<span class="co">#&gt; [1] 283</span>
+<span class="co">##### Across Space</span>
+<span class="va">modis_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cat</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'MOD16A2.006'</span>, <span class="va">varname</span> <span class="op">==</span> <span class="st">'PET_500m'</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
-  <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">ref</span>, AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu">aoi_get</span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>,
-                 startDate <span class="op">=</span> <span class="st">"2020-01-01"</span>, endDate <span class="op">=</span> <span class="st">"2020-01-15"</span><span class="op">)</span>
-  
-  <span class="va">mod</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>
-<span class="op">}</span><span class="op">)</span>
-<span class="co">#&gt; Warning: [src] "src" will be removed. It has been renamed to "sprc"</span>
-<span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   3.994   1.339   8.543</span>
+<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>
+    catolog <span class="op">=</span> <span class="va">modis_ex</span>,
+    AOI <span class="op">=</span> <span class="va">AOI</span>,
+    startDate <span class="op">=</span> <span class="st">"2010-01-01"</span>,
+    endDate <span class="op">=</span> <span class="st">"2010-01-31"</span>
+  <span class="op">)</span> |&gt;
+    <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="op">)</span>
 
-<span class="fu"><a href="reference/dap.summary.html">dap.summary</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>
-<span class="co">#&gt; vars:   &gt; PET_500m [kg/m^2/8day]</span>
-<span class="co">#&gt;  &gt; PET_500m [kg/m^2/8day]</span>
-<span class="co">#&gt; X:      1336 - 1336 (XDim)</span>
-<span class="co">#&gt; Y:      240 - 1321 (time)</span>
-<span class="co">#&gt; T:      3 (XDim - 8 days)</span>
-<span class="co">#&gt; values: 12,512,976 (vars*X*Y*T)</span>
-<span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-6-1.png" width="100%"></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="remote-temportally-tiled-reources">Remote Temportally tiled reources<a class="anchor" aria-label="anchor" href="#remote-temportally-tiled-reources"></a>
 </h2>
-<p>…</p>
-<div class="section level3">
-<h3 id="loca">LOCA<a class="anchor" aria-label="anchor" href="#loca"></a>
-</h3>
-<p>…</p>
-</div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">maca_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cat</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'maca_day'</span>, <span class="va">variable</span> <span class="op">==</span> <span class="st">'huss'</span>, <span class="va">model</span> <span class="op">==</span> <span class="st">'BNU-ESM'</span>,
+                <span class="va">scenario</span> <span class="op"><a href="https://rdrr.io/pkg/terra/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"historical"</span>, <span class="st">'rcp85'</span><span class="op">)</span><span class="op">)</span> 
+
+<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">maca_ex</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, 
+                   startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2006-01-05"</span><span class="op">)</span> |&gt; 
+    <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_historical</span>, <span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_rcp85</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-7-1.png" width="100%"></p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">nldas_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cat</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'NLDAS_FORA0125_H.002'</span>, <span class="va">varname</span> <span class="op">==</span> <span class="st">'apcpsfc'</span><span class="op">)</span> 
+
+<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">nldas_ex</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, 
+                   startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2005-12-25"</span><span class="op">)</span> |&gt; 
+    <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">apcpsfc_NA</span><span class="op">)</span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-8-1.png" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="ngen-focus">NGEN focus?<a class="anchor" aria-label="anchor" href="#ngen-focus"></a>
@@ -733,36 +228,24 @@ TRUE
 <div class="section level3">
 <h3 id="january-et-for-florida-counties">January ET for Florida counties<a class="anchor" aria-label="anchor" href="#january-et-for-florida-counties"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">ref</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'src/modis_map.rds'</span><span class="op">)</span> |&gt;
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">'mod16'</span>, <span class="va">variable</span> <span class="op">==</span> <span class="st">'ET_500m'</span><span class="op">)</span> |&gt; 
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>tiled <span class="op">=</span> <span class="st">"XY"</span><span class="op">)</span>
-
-<span class="va">AOI</span> <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu">aoi_get</span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span>, county <span class="op">=</span> <span class="st">'all'</span><span class="op">)</span>
-
-<span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
-  <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">ref</span>, AOI <span class="op">=</span> <span class="va">AOI</span>,
-                 startDate <span class="op">=</span> <span class="st">"2020-01-01"</span>, endDate <span class="op">=</span> <span class="st">"2020-01-31"</span><span class="op">)</span>
-  
-  <span class="va">mod</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>
-<span class="op">}</span><span class="op">)</span>
-<span class="co">#&gt; Warning: [src] "src" will be removed. It has been renamed to "sprc"</span>
-<span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   4.908   2.184  10.430</span>
-
-<span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
- <span class="va">agg</span> <span class="op">=</span> <span class="fu">zonal</span><span class="fu">::</span><span class="fu">execute_zonal</span><span class="op">(</span><span class="va">mod</span>, <span class="va">AOI</span>, <span class="st">"geoid"</span><span class="op">)</span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
+ <span class="va">agg</span> <span class="op">=</span> <span class="fu">zonal</span><span class="fu">::</span><span class="fu">execute_zonal</span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">apcpsfc_NA</span>, <span class="va">AOI</span>, <span class="st">"geoid"</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   2.288   0.398   2.729</span>
+<span class="co">#&gt;   1.573   0.120   1.772</span>
 
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">agg</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">agg</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-7-1.png" width="100%"></p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">aggMax</span> <span class="op">=</span> <span class="fu">zonal</span><span class="fu">::</span><span class="fu">execute_zonal</span><span class="op">(</span><span class="va">mod</span>, <span class="va">AOI</span>, <span class="st">"geoid"</span>, FUN <span class="op">=</span> <span class="st">"max"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">agg</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">agg</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+<span class="co">#&gt; Warning: plotting the first 9 out of 24 attributes; use max.plot = 24 to plot</span>
+<span class="co">#&gt; all</span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-9-1.png" width="100%"></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">aggMax</span> <span class="op">=</span> <span class="fu">zonal</span><span class="fu">::</span><span class="fu">execute_zonal</span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">apcpsfc_NA</span>, <span class="va">AOI</span>, <span class="st">"geoid"</span>, FUN <span class="op">=</span> <span class="st">"max"</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">aggMax</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">aggMax</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-7-2.png" width="100%"></p>
+<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">aggMax</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">aggMax</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+<span class="co">#&gt; Warning: plotting the first 9 out of 24 attributes; use max.plot = 24 to plot</span>
+<span class="co">#&gt; all</span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-9-2.png" width="100%"></p>
 </div>
 </div>
 </div>
@@ -804,7 +287,7 @@ TRUE
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="#"><img src="https://img.shields.io/badge/dependencies-7/33-orange?style=flat" alt="Dependencies"></a></li>
+<li><a href="#"><img src="https://img.shields.io/badge/dependencies-8/32-orange?style=flat" alt="Dependencies"></a></li>
 <li><a href="https://choosealicense.com/licenses/mit/" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></li>
 <li><a href="https://github.com/mikejohnson51/opendap.catalog/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://github.com/mikejohnson51/opendap.catalog/actions/workflows/pkgdown.yaml/badge.svg" alt="Website deployment"></a></li>
 <li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="reference/figures/lifecycle/lifecycle-experimental.svg" alt="LifeCycle"></a></li>
