@@ -12,6 +12,30 @@ deployment](https://github.com/mikejohnson51/opendap.catalog/actions/workflows/p
 Check](https://github.com/mikejohnson51/opendap.catalog/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mikejohnson51/opendap.catalog/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
+<div id="top">
+
+</div>
+
+<br />
+
+<div align="center">
+
+<h3 align="center">
+<strong>OpenDap</strong> Catalog
+</h3>
+<p align="center">
+<a href="https://mikejohnson51.github.io/opendap.catalog/"><strong>«
+Explore the Docs »</strong></a> <br /> <br />
+<a href="https://mikejohnson51.github.io/opendap.catalog/cat_params.json">Data
+Catalog</a> · <a href="">R Interface</a> ·
+<a href="https://github.com/mikejohnson51/opendap.catalog/issues">Request
+Feature</a>
+</p>
+
+</div>
+
+<hr>
+
 One of the biggest challenges with Earth System and spatial research is
 extracting data. These challenges include not only finding the source
 data but then downloading, managing, and extracting the partitions
@@ -24,7 +48,11 @@ challenge of finding resources.
 
 In light of this, `opendap.catolog` provides three primary services.
 
-#### 1. Generalized access of local and remote NetCDF data with `dap()` for space (XY) and Time (T) subsets
+<hr>
+
+#### 1. Generalized space (XY) and Time (T) subsets for *remote* and *local* NetCDF data with `dap()`
+
+> remote
 
 ``` r
 dap <- dap(URL = "https://cida.usgs.gov/thredds/dodsC/bcsd_obs", 
@@ -43,19 +71,21 @@ str(dap, max.level = 1)
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
+> local
+
 ``` r
 file <- '/Users/mjohnson/Downloads/NEXGDM_srad_2020_v100.nc'
 utils:::format.object_size(file.size(file), "auto")
 #> [1] "3.7 Gb"
 
 dap = dap(URL = file, 
-               AOI = AOI::aoi_get(state = "FL"), 
-               startDate = "2020-01-01", endDate = "2020-01-05")
+          AOI = AOI::aoi_get(state = "FL"), 
+          startDate = "2020-01-01", endDate = "2020-01-05")
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
-#### 2. A catalog of 7294 web resources that can be accessed programatically (as of 02/2022)
+#### 2. A catalog of 7294 web resources (as of 02/2022)
 
 ``` r
 dplyr::glimpse(opendap.catalog::params)
@@ -78,8 +108,11 @@ dplyr::glimpse(opendap.catalog::params)
 #> $ nT        <int> 20454, 20454, 20454, 20454, 20454, 20454, 20454, 20454, 2045…
 ```
 
-For use in other applications (e.g. stars proxy, geoknife, or python)
-this catalog is available as a JSON artifact
+For use in other applications (e.g. [stars
+proxy](https://github.com/r-spatial/stars/pull/499),
+[geoknife](https://github.com/USGS-R/geoknife),
+[climateR](https://github.com/mikejohnson51/climateR) or python/go/Rust
+applciations) this catalog is available as a JSON artifact
 [here](https://mikejohnson51.github.io/opendap.catalog/cat_params.json).
 
 ``` r
@@ -87,7 +120,7 @@ read_json('https://mikejohnson51.github.io/opendap.catalog/cat_params.json',
           simplifyVector = TRUE)
 ```
 
-### (3) The ability to pass catalog elements to the generalized toolsets to aid data discovery and complicated edge cases:
+### (3) The ability to pass catalog elements to the generalized toolsets:
 
 ``` r
 # Find MODIS PET in Florida for January 2010
