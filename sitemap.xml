@@ -16,6 +16,9 @@
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/reference/dap.html</loc>
+  </url>
+  <url>
     <loc>/reference/dap.summary.html</loc>
   </url>
   <url>
@@ -46,10 +49,16 @@
     <loc>/reference/grid_meta.html</loc>
   </url>
   <url>
+    <loc>/reference/grids.html</loc>
+  </url>
+  <url>
     <loc>/reference/index.html</loc>
   </url>
   <url>
     <loc>/reference/omit.na.html</loc>
+  </url>
+  <url>
+    <loc>/reference/params.html</loc>
   </url>
   <url>
     <loc>/reference/parse_date.html</loc>

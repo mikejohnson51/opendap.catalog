@@ -163,7 +163,7 @@
 <span class="co">#&gt; Warning in getGeoDatum(gm): Didn't find an inverse flattening value, assuming</span>
 <span class="co">#&gt; WGS84 298.257223563</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   0.984   0.105   1.215</span>
+<span class="co">#&gt;   0.752   0.096   0.893</span>
 
 <span class="fu"><a href="reference/dap.summary.html">dap.summary</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>
 <span class="co">#&gt; vars:   &gt; srad [MJ/day] (Shortwave radiation)</span>
@@ -173,7 +173,13 @@
 <span class="co">#&gt; values: 2,237,004 (vars*X*Y*T)</span>
 
 <span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">nexgdm</span><span class="op">$</span><span class="va">srad</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-5-1.png" width="100%"></p>
+<p><img src="reference/figures/README-unnamed-chunk-5-1.png" width="100%"> ## Data Catolog</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">DT</span><span class="fu">::</span><span class="fu">datatable</span><span class="op">(</span><span class="fu">opendap.catalog</span><span class="fu">::</span><span class="va"><a href="reference/params.html">params</a></span><span class="op">)</span>
+<span class="co">#&gt; Warning in instance$preRenderHook(instance): It seems your data is too big</span>
+<span class="co">#&gt; for client-side DataTables. You may consider server-side processing: https://</span>
+<span class="co">#&gt; rstudio.github.io/DT/server.html</span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-6-1.png" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="remote-spatially-tiled-reosouces">Remote Spatially tiled reosouces<a class="anchor" aria-label="anchor" href="#remote-spatially-tiled-reosouces"></a>
@@ -181,46 +187,43 @@
 <div class="section level3">
 <h3 id="modis">MODIS<a class="anchor" aria-label="anchor" href="#modis"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/read_json.html" class="external-link">read_json</a></span><span class="op">(</span><span class="st">'cat_params.json'</span>, simplifyVector <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co">##### Across Space</span>
+<span class="va">modis_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'MOD16A2.006'</span>, <span class="va">varname</span> <span class="op">==</span> <span class="st">'PET_500m'</span><span class="op">)</span>
 
-<span class="co">##### Across Space</span>
-<span class="va">modis_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cat</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'MOD16A2.006'</span>, <span class="va">varname</span> <span class="op">==</span> <span class="st">'PET_500m'</span><span class="op">)</span>
-
-<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>
+<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>
     catolog <span class="op">=</span> <span class="va">modis_ex</span>,
     AOI <span class="op">=</span> <span class="va">AOI</span>,
     startDate <span class="op">=</span> <span class="st">"2010-01-01"</span>,
-    endDate <span class="op">=</span> <span class="st">"2010-01-31"</span>
-  <span class="op">)</span> |&gt;
-    <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="op">)</span>
+    endDate <span class="op">=</span> <span class="st">"2010-01-31"</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-6-1.png" width="100%"></p>
+<p><img src="reference/figures/README-unnamed-chunk-7-1.png" width="100%"></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="remote-temportally-tiled-reources">Remote Temportally tiled reources<a class="anchor" aria-label="anchor" href="#remote-temportally-tiled-reources"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">maca_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cat</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'maca_day'</span>, <span class="va">variable</span> <span class="op">==</span> <span class="st">'huss'</span>, <span class="va">model</span> <span class="op">==</span> <span class="st">'BNU-ESM'</span>,
-                <span class="va">scenario</span> <span class="op"><a href="https://rdrr.io/pkg/terra/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"historical"</span>, <span class="st">'rcp85'</span><span class="op">)</span><span class="op">)</span> 
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">maca_ex</span> <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, 
+                 <span class="va">id</span> <span class="op">==</span> <span class="st">'maca_day'</span>, 
+                 <span class="va">variable</span> <span class="op">==</span> <span class="st">'huss'</span>, 
+                 <span class="va">model</span> <span class="op">==</span> <span class="st">'BNU-ESM'</span>,
+                 <span class="va">scenario</span> <span class="op"><a href="https://rdrr.io/pkg/terra/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"historical"</span>, <span class="st">'rcp85'</span><span class="op">)</span><span class="op">)</span> 
 
-<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">maca_ex</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, 
-                   startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2006-01-05"</span><span class="op">)</span> |&gt; 
-    <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">maca_ex</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, 
+          startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2006-01-05"</span><span class="op">)</span> 
 
 <span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_historical</span>, <span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_rcp85</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-7-1.png" width="100%"></p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">nldas_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cat</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'NLDAS_FORA0125_H.002'</span>, <span class="va">varname</span> <span class="op">==</span> <span class="st">'apcpsfc'</span><span class="op">)</span> 
+<p><img src="reference/figures/README-unnamed-chunk-8-1.png" width="100%"></p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">nldas_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'NLDAS_FORA0125_H.002'</span>, <span class="va">varname</span> <span class="op">==</span> <span class="st">'apcpsfc'</span><span class="op">)</span> 
 
-<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">nldas_ex</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, 
-                   startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2005-12-25"</span><span class="op">)</span> |&gt; 
-    <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">nldas_ex</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, 
+          startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2005-12-25"</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">apcpsfc_NA</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-8-1.png" width="100%"></p>
+<p><img src="reference/figures/README-unnamed-chunk-9-1.png" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="ngen-focus">NGEN focus?<a class="anchor" aria-label="anchor" href="#ngen-focus"></a>
@@ -228,24 +231,24 @@
 <div class="section level3">
 <h3 id="january-et-for-florida-counties">January ET for Florida counties<a class="anchor" aria-label="anchor" href="#january-et-for-florida-counties"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
  <span class="va">agg</span> <span class="op">=</span> <span class="fu">zonal</span><span class="fu">::</span><span class="fu">execute_zonal</span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">apcpsfc_NA</span>, <span class="va">AOI</span>, <span class="st">"geoid"</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   1.573   0.120   1.772</span>
+<span class="co">#&gt;   1.078   0.073   1.198</span>
 
 <span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">agg</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">agg</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
 <span class="co">#&gt; Warning: plotting the first 9 out of 24 attributes; use max.plot = 24 to plot</span>
 <span class="co">#&gt; all</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-9-1.png" width="100%"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<p><img src="reference/figures/README-unnamed-chunk-10-1.png" width="100%"></p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">aggMax</span> <span class="op">=</span> <span class="fu">zonal</span><span class="fu">::</span><span class="fu">execute_zonal</span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">apcpsfc_NA</span>, <span class="va">AOI</span>, <span class="st">"geoid"</span>, FUN <span class="op">=</span> <span class="st">"max"</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">aggMax</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">aggMax</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
 <span class="co">#&gt; Warning: plotting the first 9 out of 24 attributes; use max.plot = 24 to plot</span>
 <span class="co">#&gt; all</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-9-2.png" width="100%"></p>
+<p><img src="reference/figures/README-unnamed-chunk-10-2.png" width="100%"></p>
 </div>
 </div>
 </div>
@@ -287,7 +290,7 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="#"><img src="https://img.shields.io/badge/dependencies-8/32-orange?style=flat" alt="Dependencies"></a></li>
+<li><a href="#"><img src="https://img.shields.io/badge/dependencies-7/33-orange?style=flat" alt="Dependencies"></a></li>
 <li><a href="https://choosealicense.com/licenses/mit/" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></li>
 <li><a href="https://github.com/mikejohnson51/opendap.catalog/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://github.com/mikejohnson51/opendap.catalog/actions/workflows/pkgdown.yaml/badge.svg" alt="Website deployment"></a></li>
 <li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="reference/figures/lifecycle/lifecycle-experimental.svg" alt="LifeCycle"></a></li>
