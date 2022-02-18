@@ -64,12 +64,30 @@
   <div class="contents col-md-9">
 
 
+<div id="top">
+
+</div>
+<p><br></p>
+<div align="center">
+<h3 align="center">
+<strong>OpenDap</strong> Catalog
+</h3>
+<p align="center">
+<a href="https://mikejohnson51.github.io/opendap.catalog/" class="external-link"><strong>« Explore the Docs »</strong></a> <br><br><a href="https://mikejohnson51.github.io/opendap.catalog/cat_params.json" class="external-link">Data Catalog</a> · <a href="">R Interface</a> · <a href="https://github.com/mikejohnson51/opendap.catalog/issues" class="external-link">Request Feature</a>
+</p>
+</div>
+<hr>
 <p>One of the biggest challenges with Earth System and spatial research is extracting data. These challenges include not only finding the source data but then downloading, managing, and extracting the partitions critical for a given task.</p>
 <p>Services exist to make data more readily available over the web but introduce new challenges of identifying subsets, working across a wide array of standards (e.g. non-standards), all without alleviating the challenge of finding resources.</p>
 <p>In light of this, <code>opendap.catolog</code> provides three primary services.</p>
+<hr>
 <div class="section level4">
-<h4 id="1-generalized-access-of-local-and-remote-netcdf-data-with-dap-for-space-xy-and-time-t-subsets">1. Generalized access of local and remote NetCDF data with <code>dap()</code> for space (XY) and Time (T) subsets<a class="anchor" aria-label="anchor" href="#1-generalized-access-of-local-and-remote-netcdf-data-with-dap-for-space-xy-and-time-t-subsets"></a>
+<h4 id="1-generalized-space-xy-and-time-t-subsets-for-remote-and-local-netcdf-data-with-dap">1. Generalized space (XY) and Time (T) subsets for <em>remote</em> and <em>local</em> NetCDF data with <code>dap()</code>
+<a class="anchor" aria-label="anchor" href="#1-generalized-space-xy-and-time-t-subsets-for-remote-and-local-netcdf-data-with-dap"></a>
 </h4>
+<blockquote>
+<p>remote</p>
+</blockquote>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">dap</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>URL <span class="op">=</span> <span class="st">"https://cida.usgs.gov/thredds/dodsC/bcsd_obs"</span>, 
            AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu">aoi_get</span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>, 
@@ -84,18 +102,21 @@
 <span class="co">#&gt;  $ tasmin:Formal class 'SpatRaster' [package "terra"] with 1 slot</span>
 <span class="co">#&gt;  $ wind  :Formal class 'SpatRaster' [package "terra"] with 1 slot</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" width="100%"></p>
+<blockquote>
+<p>local</p>
+</blockquote>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">file</span> <span class="op">&lt;-</span> <span class="st">'/Users/mjohnson/Downloads/NEXGDM_srad_2020_v100.nc'</span>
 <span class="fu">utils</span><span class="fu">:::</span><span class="fu"><a href="https://rdrr.io/r/utils/object.size.html" class="external-link">format.object_size</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html" class="external-link">file.size</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span>, <span class="st">"auto"</span><span class="op">)</span>
 <span class="co">#&gt; [1] "3.7 Gb"</span>
 
 <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>URL <span class="op">=</span> <span class="va">file</span>, 
-               AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu">aoi_get</span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>, 
-               startDate <span class="op">=</span> <span class="st">"2020-01-01"</span>, endDate <span class="op">=</span> <span class="st">"2020-01-05"</span><span class="op">)</span></code></pre></div>
+          AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu">aoi_get</span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>, 
+          startDate <span class="op">=</span> <span class="st">"2020-01-01"</span>, endDate <span class="op">=</span> <span class="st">"2020-01-05"</span><span class="op">)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-5-1.png" width="100%"></p>
 </div>
 <div class="section level4">
-<h4 id="2-a-catalog-of-7294-web-resources-that-can-be-accessed-programatically-as-of-022022">2. A catalog of 7294 web resources that can be accessed programatically (as of 02/2022)<a class="anchor" aria-label="anchor" href="#2-a-catalog-of-7294-web-resources-that-can-be-accessed-programatically-as-of-022022"></a>
+<h4 id="2-a-catalog-of-7294-web-resources-as-of-022022">2. A catalog of 7294 web resources (as of 02/2022)<a class="anchor" aria-label="anchor" href="#2-a-catalog-of-7294-web-resources-as-of-022022"></a>
 </h4>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="fu">opendap.catalog</span><span class="fu">::</span><span class="va"><a href="reference/params.html">params</a></span><span class="op">)</span>
@@ -116,13 +137,13 @@
 <span class="co">#&gt; $ duration  &lt;chr&gt; "1950-01-01/2005-12-31", "1950-01-01/2005-12-31", "1950-01-0…</span>
 <span class="co">#&gt; $ interval  &lt;chr&gt; "1 days", "1 days", "1 days", "1 days", "1 days", "1 days", …</span>
 <span class="co">#&gt; $ nT        &lt;int&gt; 20454, 20454, 20454, 20454, 20454, 20454, 20454, 20454, 2045…</span></code></pre></div>
-<p>For use in other applications (e.g. stars proxy, geoknife, or python) this catalog is available as a JSON artifact <a href="https://mikejohnson51.github.io/opendap.catalog/cat_params.json" class="external-link">here</a>.</p>
+<p>For use in other applications (e.g. <a href="https://github.com/r-spatial/stars/pull/499" class="external-link">stars proxy</a>, <a href="https://github.com/USGS-R/geoknife" class="external-link">geoknife</a>, <a href="https://github.com/mikejohnson51/climateR" class="external-link">climateR</a> or python/go/Rust applciations) this catalog is available as a JSON artifact <a href="https://mikejohnson51.github.io/opendap.catalog/cat_params.json" class="external-link">here</a>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">read_json</span><span class="op">(</span><span class="st">'https://mikejohnson51.github.io/opendap.catalog/cat_params.json'</span>, 
           simplifyVector <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="3-the-ability-to-pass-catalog-elements-to-the-generalized-toolsets-to-aid-data-discovery-and-complicated-edge-cases">(3) The ability to pass catalog elements to the generalized toolsets to aid data discovery and complicated edge cases:<a class="anchor" aria-label="anchor" href="#3-the-ability-to-pass-catalog-elements-to-the-generalized-toolsets-to-aid-data-discovery-and-complicated-edge-cases"></a>
+<h3 id="3-the-ability-to-pass-catalog-elements-to-the-generalized-toolsets">(3) The ability to pass catalog elements to the generalized toolsets:<a class="anchor" aria-label="anchor" href="#3-the-ability-to-pass-catalog-elements-to-the-generalized-toolsets"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Find MODIS PET in Florida for January 2010</span>
