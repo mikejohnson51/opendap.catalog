@@ -63,194 +63,89 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<div class="section level1">
-<div class="page-header"><h1 id="opendapcatalog">opendap.catalog<a class="anchor" aria-label="anchor" href="#opendapcatalog"></a>
-</h1></div>
-<!-- badges: start -->
 
-</div>
-<div class="section level1">
-<h1 id="tldr">TL:DR;<a class="anchor" aria-label="anchor" href="#tldr"></a>
-</h1>
-<p><code>opendapR</code> provides a generalized inter functions needed to find, and document, the information needed to identify and form OpenDap queries for a range of resources.</p>
-<div class="section level2">
-<h2 id="terminolgy">Terminolgy<a class="anchor" aria-label="anchor" href="#terminolgy"></a>
-</h2>
-<p>OPeNDAP is a framework that simplifies scientific data networking via software that makes local data accessible to remote locations. <a href="https://www.opendap.org" class="external-link">see here</a></p>
-<p>For example a large NetCDF file of gridmet data can sit on the Northwestern computing system and users - like us - can request subsets of data from that file!</p>
-<p>Large local files can be published to a web-based <strong>T</strong>HREDDS <strong>D</strong>ata <strong>S</strong>erver from which metadata and data can be accessed using OPeNDAP, OGC WCS, HTTP, and other data access protocols.</p>
-<p>This allows users to stream the portion of the data set releavnat to them!</p>
-</div>
-<div class="section level2">
-<h2 id="opendap-syntax">OpenDap Syntax<a class="anchor" aria-label="anchor" href="#opendap-syntax"></a>
-</h2>
-<p>To request a subset from a TDS data using OpenDAP protocol, a common form can be followed:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>URL?{varname}{Ymin<span class="op">:</span><span class="dv">1</span><span class="op">:</span>Ymax}{Xmin<span class="op">:</span><span class="dv">1</span><span class="op">:</span>Xmax}{Tmin<span class="op">:</span><span class="dv">1</span><span class="op">:</span>Tmax}</span></code></pre></div>
-</div>
-</div>
-<div class="section level1">
-<h1 id="use-cases">Use Cases<a class="anchor" aria-label="anchor" href="#use-cases"></a>
-</h1>
-<p>Lets get data in some different ways for the state of Florida.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mikejohnson51/opendap.catalog" class="external-link">opendap.catalog</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/terra/" class="external-link">terra</a></span><span class="op">)</span>
-<span class="co">#&gt; terra 1.5.21</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://arxiv.org/abs/1403.2805" class="external-link">jsonlite</a></span><span class="op">)</span>
-<span class="co">#&gt; Warning: package 'jsonlite' was built under R version 4.1.2</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
-<span class="co">#&gt; Warning: package 'dplyr' was built under R version 4.1.2</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Attaching package: 'dplyr'</span>
-<span class="co">#&gt; The following objects are masked from 'package:terra':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     intersect, src, union</span>
-<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     filter, lag</span>
-<span class="co">#&gt; The following objects are masked from 'package:base':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     intersect, setdiff, setequal, union</span>
+<p>One of the biggest challenges with Earth System and spatial research is extracting data. These challenges include not only finding the source data but then downloading, managing, and extracting the partitions critical for a given task.</p>
+<p>Services exist to make data more readily available over the web but introduce new challenges of identifying subsets, working across a wide array of standards (e.g. non-standards), all without alleviating the challenge of finding resources.</p>
+<p>In light of this, <code>opendap.catolog</code> provides three primary services.</p>
+<div class="section level4">
+<h4 id="1-generalized-access-of-local-and-remote-netcdf-data-with-dap-for-space-xy-and-time-t-subsets">1. Generalized access of local and remote NetCDF data with <code>dap()</code> for space (XY) and Time (T) subsets<a class="anchor" aria-label="anchor" href="#1-generalized-access-of-local-and-remote-netcdf-data-with-dap-for-space-xy-and-time-t-subsets"></a>
+</h4>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">dap</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>URL <span class="op">=</span> <span class="st">"https://cida.usgs.gov/thredds/dodsC/bcsd_obs"</span>, 
+           AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu">aoi_get</span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>, 
+           startDate <span class="op">=</span> <span class="st">"1995-01-01"</span><span class="op">)</span>
 
-<span class="va">AOI</span> <span class="op">&lt;-</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu">aoi_get</span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span>, county <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">AOI</span><span class="op">$</span><span class="va">geometry</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-2-1.png" width="100%"></p>
-<div class="section level3">
-<h3 id="remote-resource">Remote Resource<a class="anchor" aria-label="anchor" href="#remote-resource"></a>
-</h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">url</span> <span class="op">&lt;-</span> <span class="st">"https://cida.usgs.gov/thredds/dodsC/bcsd_obs"</span>
-
-<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>URL <span class="op">=</span> <span class="va">url</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, startDate <span class="op">=</span> <span class="st">"1995-01-01"</span><span class="op">)</span>
-
-<span class="fu"><a href="reference/dap.summary.html">dap.summary</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>
-<span class="co">#&gt; vars:   &gt; pr [mm/m] (monthly_sum_pr)</span>
-<span class="co">#&gt;  &gt; prate [mm/d] (monthly_avg_prate)</span>
-<span class="co">#&gt;  &gt; tas [C] (monthly_avg_tas)</span>
-<span class="co">#&gt;  &gt; tasmax [C] (monthly_avg_tasmax)</span>
-<span class="co">#&gt;  &gt; tasmin [C] (monthly_avg_tasmin)</span>
-<span class="co">#&gt;  &gt; wind [m/s] (monthly_avg_wind)</span>
-<span class="co">#&gt; X:      62 (longitude)</span>
-<span class="co">#&gt; Y:      48 (latitude)</span>
-<span class="co">#&gt; T:      1 (time - 1 months)</span>
-<span class="co">#&gt; values: 17,856 (vars*X*Y*T)</span>
-
-<span class="fu">DT</span><span class="fu">::</span><span class="fu">datatable</span><span class="op">(</span><span class="va">dap</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">dap</span>, max.level <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
+<span class="co">#&gt; List of 6</span>
+<span class="co">#&gt;  $ pr    :Formal class 'SpatRaster' [package "terra"] with 1 slot</span>
+<span class="co">#&gt;  $ prate :Formal class 'SpatRaster' [package "terra"] with 1 slot</span>
+<span class="co">#&gt;  $ tas   :Formal class 'SpatRaster' [package "terra"] with 1 slot</span>
+<span class="co">#&gt;  $ tasmax:Formal class 'SpatRaster' [package "terra"] with 1 slot</span>
+<span class="co">#&gt;  $ tasmin:Formal class 'SpatRaster' [package "terra"] with 1 slot</span>
+<span class="co">#&gt;  $ wind  :Formal class 'SpatRaster' [package "terra"] with 1 slot</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" width="100%"></p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">bcsd</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span>dap <span class="op">=</span> <span class="va">dap</span><span class="op">[</span><span class="va">dap</span><span class="op">$</span><span class="va">varname</span> <span class="op">==</span> <span class="st">"pr"</span>,<span class="op">]</span><span class="op">)</span>
-
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bcsd</span><span class="op">$</span><span class="va">pr</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-4-1.png" width="100%"></p>
-</div>
-<div class="section level2">
-<h2 id="local-resource">Local Resource<a class="anchor" aria-label="anchor" href="#local-resource"></a>
-</h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">url</span> <span class="op">&lt;-</span> <span class="st">'/Users/mjohnson/Downloads/NEXGDM_srad_2020_v100.nc'</span>
-<span class="fu">utils</span><span class="fu">:::</span><span class="fu"><a href="https://rdrr.io/r/utils/object.size.html" class="external-link">format.object_size</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html" class="external-link">file.size</a></span><span class="op">(</span><span class="va">url</span><span class="op">)</span>, <span class="st">"auto"</span><span class="op">)</span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">file</span> <span class="op">&lt;-</span> <span class="st">'/Users/mjohnson/Downloads/NEXGDM_srad_2020_v100.nc'</span>
+<span class="fu">utils</span><span class="fu">:::</span><span class="fu"><a href="https://rdrr.io/r/utils/object.size.html" class="external-link">format.object_size</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html" class="external-link">file.size</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span>, <span class="st">"auto"</span><span class="op">)</span>
 <span class="co">#&gt; [1] "3.7 Gb"</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
-  <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>URL <span class="op">=</span> <span class="va">url</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, 
-                 startDate <span class="op">=</span> <span class="st">"2020-01-01"</span>, endDate <span class="op">=</span> <span class="st">"2020-01-05"</span><span class="op">)</span>
-  <span class="va">nexgdm</span> <span class="op">=</span> <span class="fu"><a href="reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>
-<span class="op">}</span><span class="op">)</span>
-<span class="co">#&gt; Warning in getGeoDatum(gm): Didn't find a longitude of prime meridian for datum,</span>
-<span class="co">#&gt; assuming 0.</span>
-<span class="co">#&gt; Warning in getGeoDatum(gm): Didn't find a semi major axis for datum, assuming</span>
-<span class="co">#&gt; WGS84 6378137.0 meters</span>
-<span class="co">#&gt; Warning in getGeoDatum(gm): Didn't find an inverse flattening value, assuming</span>
-<span class="co">#&gt; WGS84 298.257223563</span>
-<span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   0.752   0.096   0.893</span>
-
-<span class="fu"><a href="reference/dap.summary.html">dap.summary</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>
-<span class="co">#&gt; vars:   &gt; srad [MJ/day] (Shortwave radiation)</span>
-<span class="co">#&gt; X:      807 (x)</span>
-<span class="co">#&gt; Y:      693 (y)</span>
-<span class="co">#&gt; T:      4 (time - 1 days)</span>
-<span class="co">#&gt; values: 2,237,004 (vars*X*Y*T)</span>
-
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">nexgdm</span><span class="op">$</span><span class="va">srad</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-5-1.png" width="100%"> ## Data Catolog</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">DT</span><span class="fu">::</span><span class="fu">datatable</span><span class="op">(</span><span class="fu">opendap.catalog</span><span class="fu">::</span><span class="va"><a href="reference/params.html">params</a></span><span class="op">)</span>
-<span class="co">#&gt; Warning in instance$preRenderHook(instance): It seems your data is too big</span>
-<span class="co">#&gt; for client-side DataTables. You may consider server-side processing: https://</span>
-<span class="co">#&gt; rstudio.github.io/DT/server.html</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-6-1.png" width="100%"></p>
+<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>URL <span class="op">=</span> <span class="va">file</span>, 
+               AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu">aoi_get</span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>, 
+               startDate <span class="op">=</span> <span class="st">"2020-01-01"</span>, endDate <span class="op">=</span> <span class="st">"2020-01-05"</span><span class="op">)</span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-5-1.png" width="100%"></p>
 </div>
-<div class="section level2">
-<h2 id="remote-spatially-tiled-reosouces">Remote Spatially tiled reosouces<a class="anchor" aria-label="anchor" href="#remote-spatially-tiled-reosouces"></a>
-</h2>
+<div class="section level4">
+<h4 id="2-a-catalog-of-7294-web-resources-that-can-be-accessed-programatically-as-of-022022">2. A catalog of 7294 web resources that can be accessed programatically (as of 02/2022)<a class="anchor" aria-label="anchor" href="#2-a-catalog-of-7294-web-resources-that-can-be-accessed-programatically-as-of-022022"></a>
+</h4>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="fu">opendap.catalog</span><span class="fu">::</span><span class="va"><a href="reference/params.html">params</a></span><span class="op">)</span>
+<span class="co">#&gt; Rows: 7,294</span>
+<span class="co">#&gt; Columns: 15</span>
+<span class="co">#&gt; $ id        &lt;chr&gt; "maca_day", "maca_day", "maca_day", "maca_day", "maca_day", …</span>
+<span class="co">#&gt; $ grid.id   &lt;chr&gt; "maca_day", "maca_day", "maca_day", "maca_day", "maca_day", …</span>
+<span class="co">#&gt; $ URL       &lt;chr&gt; "http://thredds.northwestknowledge.net:8080/thredds/dodsC/ag…</span>
+<span class="co">#&gt; $ tiled     &lt;chr&gt; "T", "T", "T", "T", "T", "T", "T", "T", "T", "T", "T", "T", …</span>
+<span class="co">#&gt; $ variable  &lt;chr&gt; "huss", "huss", "huss", "huss", "huss", "huss", "huss", "hus…</span>
+<span class="co">#&gt; $ varname   &lt;chr&gt; "specific_humidity", "specific_humidity", "specific_humidity…</span>
+<span class="co">#&gt; $ long_name &lt;chr&gt; "Daily Mean Near-Surface Specific Humidity", "Daily Mean Nea…</span>
+<span class="co">#&gt; $ units     &lt;chr&gt; "kg kg-1", "kg kg-1", "kg kg-1", "kg kg-1", "kg kg-1", "kg k…</span>
+<span class="co">#&gt; $ model     &lt;chr&gt; "BNU-ESM", "CNRM-CM5", "CSIRO-Mk3-6-0", "bcc-csm1-1", "CanES…</span>
+<span class="co">#&gt; $ ensemble  &lt;chr&gt; "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", …</span>
+<span class="co">#&gt; $ scenario  &lt;chr&gt; "historical", "historical", "historical", "historical", "his…</span>
+<span class="co">#&gt; $ T_name    &lt;chr&gt; "time", "time", "time", "time", "time", "time", "time", "tim…</span>
+<span class="co">#&gt; $ duration  &lt;chr&gt; "1950-01-01/2005-12-31", "1950-01-01/2005-12-31", "1950-01-0…</span>
+<span class="co">#&gt; $ interval  &lt;chr&gt; "1 days", "1 days", "1 days", "1 days", "1 days", "1 days", …</span>
+<span class="co">#&gt; $ nT        &lt;int&gt; 20454, 20454, 20454, 20454, 20454, 20454, 20454, 20454, 2045…</span></code></pre></div>
+<p>For use in other applications (e.g. stars proxy, geoknife, or python) this catalog is available as a JSON artifact <a href="https://mikejohnson51.github.io/opendap.catalog/cat_params.json" class="external-link">here</a>.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">read_json</span><span class="op">(</span><span class="st">'https://mikejohnson51.github.io/opendap.catalog/cat_params.json'</span>, 
+          simplifyVector <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+</div>
 <div class="section level3">
-<h3 id="modis">MODIS<a class="anchor" aria-label="anchor" href="#modis"></a>
+<h3 id="3-the-ability-to-pass-catalog-elements-to-the-generalized-toolsets-to-aid-data-discovery-and-complicated-edge-cases">(3) The ability to pass catalog elements to the generalized toolsets to aid data discovery and complicated edge cases:<a class="anchor" aria-label="anchor" href="#3-the-ability-to-pass-catalog-elements-to-the-generalized-toolsets-to-aid-data-discovery-and-complicated-edge-cases"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">##### Across Space</span>
-<span class="va">modis_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'MOD16A2.006'</span>, <span class="va">varname</span> <span class="op">==</span> <span class="st">'PET_500m'</span><span class="op">)</span>
-
-<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>
-    catolog <span class="op">=</span> <span class="va">modis_ex</span>,
-    AOI <span class="op">=</span> <span class="va">AOI</span>,
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Find MODIS PET in Florida for January 2010</span>
+<span class="op">(</span>
+  <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>
+    catolog <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, 
+                            <span class="va">id</span> <span class="op">==</span> <span class="st">'MOD16A2.006'</span>, 
+                            <span class="va">varname</span> <span class="op">==</span> <span class="st">'PET_500m'</span><span class="op">)</span>,
+    AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu">aoi_get</span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>,
     startDate <span class="op">=</span> <span class="st">"2010-01-01"</span>,
-    endDate <span class="op">=</span> <span class="st">"2010-01-31"</span><span class="op">)</span>
-
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-7-1.png" width="100%"></p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="remote-temportally-tiled-reources">Remote Temportally tiled reources<a class="anchor" aria-label="anchor" href="#remote-temportally-tiled-reources"></a>
-</h2>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">maca_ex</span> <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, 
-                 <span class="va">id</span> <span class="op">==</span> <span class="st">'maca_day'</span>, 
-                 <span class="va">variable</span> <span class="op">==</span> <span class="st">'huss'</span>, 
-                 <span class="va">model</span> <span class="op">==</span> <span class="st">'BNU-ESM'</span>,
-                 <span class="va">scenario</span> <span class="op"><a href="https://rdrr.io/pkg/terra/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"historical"</span>, <span class="st">'rcp85'</span><span class="op">)</span><span class="op">)</span> 
-
-<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">maca_ex</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, 
-          startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2006-01-05"</span><span class="op">)</span> 
-
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_historical</span>, <span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_rcp85</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-8-1.png" width="100%"></p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">nldas_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'NLDAS_FORA0125_H.002'</span>, <span class="va">varname</span> <span class="op">==</span> <span class="st">'apcpsfc'</span><span class="op">)</span> 
-
-<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">nldas_ex</span>, AOI <span class="op">=</span> <span class="va">AOI</span>, 
-          startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2005-12-25"</span><span class="op">)</span>
-
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">apcpsfc_NA</span><span class="op">)</span></code></pre></div>
+    endDate   <span class="op">=</span> <span class="st">"2010-01-31"</span>
+  <span class="op">)</span>
+<span class="op">)</span>
+<span class="co">#&gt; class       : SpatRaster </span>
+<span class="co">#&gt; dimensions  : 1561, 1336, 5  (nrow, ncol, nlyr)</span>
+<span class="co">#&gt; resolution  : 463.3127, 463.3127  (x, y)</span>
+<span class="co">#&gt; extent      : -8404261, -7785275, 2724047, 3447278  (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; coord. ref. : +proj=sinu +lon_0=0 +x_0=0 +y_0=0 +R=6371007.181 +units=m +no_defs </span>
+<span class="co">#&gt; source      : memory </span>
+<span class="co">#&gt; names       : 2010-01-02, 2010-01-10, 2010-01-18, 2010-01-26, 2010-02-03 </span>
+<span class="co">#&gt; min values  :  10.300000,   7.200000,   9.900001,   9.900001,  11.100000 </span>
+<span class="co">#&gt; max values  :       34.4,       24.1,       35.9,       37.5,       44.4</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-9-1.png" width="100%"></p>
-</div>
-<div class="section level2">
-<h2 id="ngen-focus">NGEN focus?<a class="anchor" aria-label="anchor" href="#ngen-focus"></a>
-</h2>
-<div class="section level3">
-<h3 id="january-et-for-florida-counties">January ET for Florida counties<a class="anchor" aria-label="anchor" href="#january-et-for-florida-counties"></a>
-</h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
- <span class="va">agg</span> <span class="op">=</span> <span class="fu">zonal</span><span class="fu">::</span><span class="fu">execute_zonal</span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">apcpsfc_NA</span>, <span class="va">AOI</span>, <span class="st">"geoid"</span><span class="op">)</span>
-<span class="op">}</span><span class="op">)</span>
-<span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   1.078   0.073   1.198</span>
-
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">agg</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">agg</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
-<span class="co">#&gt; Warning: plotting the first 9 out of 24 attributes; use max.plot = 24 to plot</span>
-<span class="co">#&gt; all</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-10-1.png" width="100%"></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">aggMax</span> <span class="op">=</span> <span class="fu">zonal</span><span class="fu">::</span><span class="fu">execute_zonal</span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">apcpsfc_NA</span>, <span class="va">AOI</span>, <span class="st">"geoid"</span>, FUN <span class="op">=</span> <span class="st">"max"</span><span class="op">)</span>
-
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">aggMax</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">aggMax</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
-<span class="co">#&gt; Warning: plotting the first 9 out of 24 attributes; use max.plot = 24 to plot</span>
-<span class="co">#&gt; all</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-10-2.png" width="100%"></p>
-</div>
-</div>
 </div>
 
   </div>
