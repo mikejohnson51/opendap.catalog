@@ -63,19 +63,16 @@ cat("\nvalues:", formatC(cells * tDim * length(var),
 #' @param AOI sf object
 #' @param startDate start date (YYYY-MM-DD)
 #' @param endDate  end date (YYYY- MM-DD)
-#' @param grid_path path to grid json
 #' @details if AOI is NULL no spatial crop is executed. If startDate AND endDate are NULL, no temporal crop is executed. If just endDate is NULL it defaults to the startDate.
 #' @return data.frame
 #' @export
 #' @importFrom terra vect intersect ext project
-#' @importFrom jsonlite read_json
 
 dap_crop = function(URL       = NULL,
                     catolog   = NULL,
                     AOI       = NULL,
                     startDate = NULL,
-                    endDate   = NULL,
-                    grid_path = '/Users/mjohnson/github/opendap.catalog/cat_grids.json'){
+                    endDate   = NULL){
 
   if(!is.null(URL)){
     catolog = read_dap_file(URL, id = "local")
@@ -148,7 +145,7 @@ dap_crop = function(URL       = NULL,
     }
 
      if(catolog$id[1] != 'local'){
-        grids = jsonlite::read_json(grid_path, simplifyVector = TRUE)
+        grids = opendap.catalog::grids
         grids = grids[grids$grid.id %in% catolog$grid.id, ]
 
         if(length(unique(grids$proj)) > 1){
@@ -324,6 +321,34 @@ var_to_terra = function(var, dap){
   r
 
 }
+
+#' @title Get DAP
+#' @description Define and get data from a DAP resource
+#' @param URL local file path or dodC URL
+#' @param catolog subset of open.dap catolog
+#' @param AOI sf object
+#' @param startDate start date (YYYY-MM-DD)
+#' @param endDate  end date (YYYY- MM-DD)
+#' @details Wraps dap_get and dap_crop into one.
+#' If AOI is NULL no spatial crop is executed. If startDate AND endDate are NULL, no temporal crop is executed. If just endDate is NULL it defaults to the startDate.
+#' @return data.frame
+#' @export
+#' @importFrom terra vect intersect ext project
+
+dap = function(URL       = NULL,
+               catolog   = NULL,
+               AOI       = NULL,
+               startDate = NULL,
+               endDate   = NULL){
+
+  dap_get(dap_crop(URL = URL,
+                   catolog = catolog,
+                   AOI = AOI,
+                   startDate = startDate,
+                   endDate = endDate)
+  )
+}
+
 
 #' Get DAP Array
 #' @param dap dap description

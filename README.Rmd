@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 # opendap.catalog
 
 <!-- badges: start -->
-[![Dependencies](https://img.shields.io/badge/dependencies-8/32-orange?style=flat)](#)
+[![Dependencies](https://img.shields.io/badge/dependencies-7/33-orange?style=flat)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit/)
 [![Website deployment](https://github.com/mikejohnson51/opendap.catalog/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/mikejohnson51/opendap.catalog/actions/workflows/pkgdown.yaml)
 [![LifeCycle](man/figures/lifecycle/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -94,23 +94,24 @@ dap.summary(dap)
 
 plot(nexgdm$srad)
 ```
+## Data Catolog
+
+```{r}
+DT::datatable(opendap.catalog::params)
+```
 
 ## Remote Spatially tiled reosouces
 ### MODIS 
 
 ```{r}
-cat <- read_json('cat_params.json', simplifyVector = TRUE)
-
 ##### Across Space
-modis_ex = filter(cat, id == 'MOD16A2.006', varname == 'PET_500m')
+modis_ex = filter(params, id == 'MOD16A2.006', varname == 'PET_500m')
 
-dap = dap_crop(
+dap = dap(
     catolog = modis_ex,
     AOI = AOI,
     startDate = "2010-01-01",
-    endDate = "2010-01-31"
-  ) |>
-    dap_get()
+    endDate = "2010-01-31")
 
 plot(dap)
 ```
@@ -118,22 +119,23 @@ plot(dap)
 ## Remote Temportally tiled reources
 
 ```{r}
-maca_ex = filter(cat, id == 'maca_day', variable == 'huss', model == 'BNU-ESM',
-                scenario %in% c("historical", 'rcp85')) 
+maca_ex = dplyr::filter(params, 
+                 id == 'maca_day', 
+                 variable == 'huss', 
+                 model == 'BNU-ESM',
+                 scenario %in% c("historical", 'rcp85')) 
 
-dap = dap_crop(catolog = maca_ex, AOI = AOI, 
-                   startDate = "2005-12-25", endDate = "2006-01-05") |> 
-    dap_get()
+dap = dap(catolog = maca_ex, AOI = AOI, 
+          startDate = "2005-12-25", endDate = "2006-01-05") 
 
 plot(c(dap$specific_humidity_historical, dap$specific_humidity_rcp85))
 ```
 
 ```{r}
-nldas_ex = filter(cat, id == 'NLDAS_FORA0125_H.002', varname == 'apcpsfc') 
+nldas_ex = filter(params, id == 'NLDAS_FORA0125_H.002', varname == 'apcpsfc') 
 
-dap = dap_crop(catolog = nldas_ex, AOI = AOI, 
-                   startDate = "2005-12-25", endDate = "2005-12-25") |> 
-    dap_get()
+dap = dap(catolog = nldas_ex, AOI = AOI, 
+          startDate = "2005-12-25", endDate = "2005-12-25")
 
 plot(dap$apcpsfc_NA)
 ```

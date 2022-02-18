@@ -10,7 +10,6 @@ Depends:
 Imports: 
     doParallel,
     foreach,
-    jsonlite,
     ncmeta,
     parallel,
     RNetCDF,
@@ -22,3 +21,4 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 URL: https://github.com/mikejohnson51/opendap.catalog
 BugReports: https://github.com/mikejohnson51/opendap.catalog/issues
+LazyData: true

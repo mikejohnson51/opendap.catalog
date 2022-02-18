@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-[![Dependencies](https://img.shields.io/badge/dependencies-8/32-orange?style=flat)](#)
+[![Dependencies](https://img.shields.io/badge/dependencies-7/33-orange?style=flat)](#)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit/)
 [![Website
@@ -126,7 +126,7 @@ system.time({
 #> Warning in getGeoDatum(gm): Didn't find an inverse flattening value, assuming
 #> WGS84 298.257223563
 #>    user  system elapsed 
-#>   0.984   0.105   1.215
+#>   0.752   0.096   0.893
 
 dap.summary(dap)
 #> vars:   > srad [MJ/day] (Shortwave radiation)
@@ -138,57 +138,64 @@ dap.summary(dap)
 plot(nexgdm$srad)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" /> ##
+Data Catolog
+
+``` r
+DT::datatable(opendap.catalog::params)
+#> Warning in instance$preRenderHook(instance): It seems your data is too big
+#> for client-side DataTables. You may consider server-side processing: https://
+#> rstudio.github.io/DT/server.html
+```
+
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
 ## Remote Spatially tiled reosouces
 
 ### MODIS
 
 ``` r
-cat <- read_json('cat_params.json', simplifyVector = TRUE)
-
 ##### Across Space
-modis_ex = filter(cat, id == 'MOD16A2.006', varname == 'PET_500m')
+modis_ex = filter(params, id == 'MOD16A2.006', varname == 'PET_500m')
 
-dap = dap_crop(
+dap = dap(
     catolog = modis_ex,
     AOI = AOI,
     startDate = "2010-01-01",
-    endDate = "2010-01-31"
-  ) |>
-    dap_get()
+    endDate = "2010-01-31")
 
 plot(dap)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
 ## Remote Temportally tiled reources
 
 ``` r
-maca_ex = filter(cat, id == 'maca_day', variable == 'huss', model == 'BNU-ESM',
-                scenario %in% c("historical", 'rcp85')) 
+maca_ex = dplyr::filter(params, 
+                 id == 'maca_day', 
+                 variable == 'huss', 
+                 model == 'BNU-ESM',
+                 scenario %in% c("historical", 'rcp85')) 
 
-dap = dap_crop(catolog = maca_ex, AOI = AOI, 
-                   startDate = "2005-12-25", endDate = "2006-01-05") |> 
-    dap_get()
+dap = dap(catolog = maca_ex, AOI = AOI, 
+          startDate = "2005-12-25", endDate = "2006-01-05") 
 
 plot(c(dap$specific_humidity_historical, dap$specific_humidity_rcp85))
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 ``` r
-nldas_ex = filter(cat, id == 'NLDAS_FORA0125_H.002', varname == 'apcpsfc') 
+nldas_ex = filter(params, id == 'NLDAS_FORA0125_H.002', varname == 'apcpsfc') 
 
-dap = dap_crop(catolog = nldas_ex, AOI = AOI, 
-                   startDate = "2005-12-25", endDate = "2005-12-25") |> 
-    dap_get()
+dap = dap(catolog = nldas_ex, AOI = AOI, 
+          startDate = "2005-12-25", endDate = "2005-12-25")
 
 plot(dap$apcpsfc_NA)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 ## NGEN focus?
 
@@ -199,14 +206,14 @@ system.time({
  agg = zonal::execute_zonal(dap$apcpsfc_NA, AOI, "geoid")
 })
 #>    user  system elapsed 
-#>   1.573   0.120   1.772
+#>   1.078   0.073   1.198
 
 plot(agg[grep("V", names(agg))])
 #> Warning: plotting the first 9 out of 24 attributes; use max.plot = 24 to plot
 #> all
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 ``` r
 aggMax = zonal::execute_zonal(dap$apcpsfc_NA, AOI, "geoid", FUN = "max")
@@ -216,4 +223,4 @@ plot(aggMax[grep("V", names(aggMax))])
 #> all
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-2.png" width="100%" />
