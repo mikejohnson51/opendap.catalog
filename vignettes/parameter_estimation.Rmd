@@ -1,0 +1,19 @@
+---
+title: "Parameter Estimation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Parameter Estimation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(opendap.catalog)
+```

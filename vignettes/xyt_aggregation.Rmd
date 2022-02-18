@@ -1,0 +1,19 @@
+---
+title: "Space and Time Aggregates"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Space and Time Aggregates}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(opendap.catalog)
+```

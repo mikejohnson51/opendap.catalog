@@ -22,3 +22,7 @@ RoxygenNote: 7.1.2
 URL: https://github.com/mikejohnson51/opendap.catalog
 BugReports: https://github.com/mikejohnson51/opendap.catalog/issues
 LazyData: true
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr

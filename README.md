@@ -20,9 +20,9 @@ Check](https://github.com/mikejohnson51/opendap.catalog/actions/workflows/R-CMD-
 
 <div align="center">
 
-<h3 align="center">
+<h1 align="center">
 <strong>OpenDap</strong> Catalog
-</h3>
+</h1>
 <p align="center">
 <a href="https://mikejohnson51.github.io/opendap.catalog/"><strong>«
 Explore the Docs »</strong></a> <br /> <br />
