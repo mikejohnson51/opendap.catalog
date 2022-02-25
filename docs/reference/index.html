@@ -23,6 +23,9 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li>
+  <a href="../articles/index.html">Intro</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
@@ -32,16 +35,19 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/catalog.html">OpenDAP catalog</a>
+      <a href="../articles/dap_utils.html">R Utilites</a>
     </li>
     <li>
-      <a href="../articles/dap_utils.html">R DAP Utilites</a>
+      <a href="../articles/catalog.html">OPeDAP catalog</a>
+    </li>
+    <li>
+      <a href="../articles/xyt_aggregation.html">XYT aggrrgations</a>
+    </li>
+    <li>
+      <a href="../articles/future.html">Going Parallel</a>
     </li>
     <li>
       <a href="../articles/parameter_estimation.html">Parameter Estimation</a>
-    </li>
-    <li>
-      <a href="../articles/xyt_aggregation.html">Space and Time Aggregates</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
@@ -63,15 +69,11 @@
     </div>
 
     <table class="ref-index"><colgroup><col class="alias"><col class="title"></colgroup><tbody><tr><th colspan="2">
-          <h2 id="all-functions">All functions <a href="#all-functions" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p>
+          <h2 id="r-dap-utilites">R DAP utilites <a href="#r-dap-utilites" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions to interface with gridded data resources</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="dap.html">dap()</a></code> </p>
-        </td>
-        <td><p>Get DAP</p></td>
-      </tr><tr><td>
-          <p><code><a href="dap.summary.html">dap.summary()</a></code> </p>
+          <p><code><a href="dap_summary.html">dap_summary()</a></code> </p>
         </td>
         <td><p>Print Summary Information About a OpenDAP Resource</p></td>
       </tr><tr><td>
@@ -83,73 +85,21 @@
         </td>
         <td><p>Download DAP resource</p></td>
       </tr><tr><td>
-          <p><code><a href="dap_meta.html">dap_meta()</a></code> </p>
+          <p><code><a href="dap.html">dap()</a></code> </p>
         </td>
-        <td><p>Add All DAP Metadata</p></td>
-      </tr><tr><td>
-          <p><code><a href="dap_to_local.html">dap_to_local()</a></code> <code><a href="dap_to_local.html">dap_to_local()</a></code> </p>
-        </td>
-        <td><p>Convert OpenDAP to start/count call</p></td>
-      </tr><tr><td>
-          <p><code><a href="dap_xyzv.html">dap_xyzv()</a></code> </p>
-        </td>
-        <td><p>Get XYTV data from DAP URL</p></td>
-      </tr><tr><td>
-          <p><code><a href="dot-resource_grid.html">.resource_grid()</a></code> </p>
-        </td>
-        <td><p>Extract grid metadata from NC Pointer</p></td>
-      </tr><tr><td>
-          <p><code><a href="dot-resource_time.html">.resource_time()</a></code> </p>
-        </td>
-        <td><p>Extract time metadata from NC Pointer</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_data.html">get_data()</a></code> </p>
-        </td>
-        <td><p>Get DAP Array</p></td>
-      </tr><tr><td>
-          <p><code><a href="grid_meta.html">grid_meta()</a></code> </p>
-        </td>
-        <td><p>Add Grid Metadata</p></td>
-      </tr><tr><td>
-          <p><code><a href="grids.html">grids</a></code> </p>
+        <td><p>Get DAP</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="data">Data <a href="#data" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Exported data sets</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="grids.html">grids</a></code> <code><a href="grids.html">grids</a></code> </p>
         </td>
         <td><p>OpenDAP Catolog Grids</p></td>
       </tr><tr><td>
-          <p><code><a href="omit.na.html">omit.na()</a></code> </p>
-        </td>
-        <td><p>Remove NAs from Vector</p></td>
-      </tr><tr><td>
-          <p><code><a href="params.html">params</a></code> </p>
+          <p><code><a href="params.html">params</a></code> <code><a href="params.html">params</a></code> </p>
         </td>
         <td><p>OpenDAP Catolog Parameters</p></td>
-      </tr><tr><td>
-          <p><code><a href="parse_date.html">parse_date()</a></code> </p>
-        </td>
-        <td><p>Parse Dates from duratoon and interval</p></td>
-      </tr><tr><td>
-          <p><code><a href="read_dap_file.html">read_dap_file()</a></code> </p>
-        </td>
-        <td><p>Read from a OpenDAP landing page</p></td>
-      </tr><tr><td>
-          <p><code><a href="read_tds.html">read_tds()</a></code> </p>
-        </td>
-        <td><p>Read from a THREDDS catalog HTML page</p></td>
-      </tr><tr><td>
-          <p><code><a href="time_meta.html">time_meta()</a></code> </p>
-        </td>
-        <td><p>Add Time Metadata</p></td>
-      </tr><tr><td>
-          <p><code><a href="try_att.html">try_att()</a></code> </p>
-        </td>
-        <td><p>TryCatch around RNetCDF::att.get.nc()</p></td>
-      </tr><tr><td>
-          <p><code><a href="var_to_terra.html">var_to_terra()</a></code> </p>
-        </td>
-        <td><p>Variable Array to Terra</p></td>
-      </tr><tr><td>
-          <p><code><a href="variable_meta.html">variable_meta()</a></code> </p>
-        </td>
-        <td><p>Add Variable Metadata</p></td>
       </tr></tbody></table></div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

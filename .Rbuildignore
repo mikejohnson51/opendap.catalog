@@ -1,11 +1,11 @@
 ^opendap\.catalog\.Rproj$
 ^\.Rproj\.user$
+^\.github$
+^README\.Rmd$
 ^LICENSE\.md$
 ^README\.Rmd$
 ^_pkgdown\.yaml$
-.github
-docs
-^.*\.json
-^.*\.parquet
-^.*\.RDS
-src
+^docs$
+^pkgdown$
+^data-raw$
+^src$

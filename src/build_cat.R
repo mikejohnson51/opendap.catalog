@@ -123,18 +123,18 @@ meta[['prism_monthly']] = read_dap_file(URL = 'https://cida.usgs.gov/thredds/dod
   dap_meta() %>%
   mutate(tiled = "")
 
-####  CHIRPS ####
-meta[['chirps']] = bind_rows(read_dap_file("https://upwell.pfeg.noaa.gov/erddap/griddap/chirps20GlobalMonthlyP05", "chirps_month"),
-                             read_dap_file("https://upwell.pfeg.noaa.gov/erddap/griddap/chirps20GlobalDailyP05", "chirps_day")) %>%
-  mutate(variable = varname) %>%
-  dap_meta() %>%
-  mutate(tiled = "")
-
-####  JPL Wind ####
-meta[['jplwind']] = read_dap_file(URL = "https://upwell.pfeg.noaa.gov/erddap/griddap/jplCcmp35aWindPentad", "jplwind") %>%
-  mutate(variable = varname) %>%
-  dap_meta() %>%
-  mutate(tiled = "")
+# ####  CHIRPS ####
+# meta[['chirps']] = bind_rows(read_dap_file("https://upwell.pfeg.noaa.gov/erddap/griddap/chirps20GlobalMonthlyP05", "chirps_month"),
+#                              read_dap_file("https://upwell.pfeg.noaa.gov/erddap/griddap/chirps20GlobalDailyP05", "chirps_day")) %>%
+#   mutate(variable = varname) %>%
+#   dap_meta() %>%
+#   mutate(tiled = "")
+#
+# ####  JPL Wind ####
+# meta[['jplwind']] = read_dap_file(URL = "https://upwell.pfeg.noaa.gov/erddap/griddap/jplCcmp35aWindPentad", "jplwind") %>%
+#   mutate(variable = varname) %>%
+#   dap_meta() %>%
+# mutate(tiled = "")
 
 #### LDAS ####
 library(rvest)

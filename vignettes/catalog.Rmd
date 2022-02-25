@@ -10,10 +10,121 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  warning  = FALSE,
+  message  = FALSE,
   comment = "#>"
 )
 ```
 
 ```{r setup}
 library(opendap.catalog)
+library(dplyr)
+library(terra)
 ```
+
+# Intro
+
+The initial Vignette highlighted how to extract subsets of data when the source data set was known. A second goal of `opendap.catalog` is to provide an evolving catalog of available data resources with the information needed to access them. 
+As of `r format(Sys.Date(), format = "%m/%Y")` there are `r nrow(opendap.catalog::params)` datasets identified and stored in `opendap.catalog::params`. In these there are `r length(unique(opendap.catalog::params$id))` unique data sources, and `r length(unique(opendap.catalog::params$varname))` unique variables.
+
+```{r}
+dplyr::glimpse(opendap.catalog::params)
+```
+For use in other applications (e.g. [stars proxy](https://github.com/r-spatial/stars/pull/499), [geoknife](https://github.com/USGS-R/geoknife), [climateR](https://github.com/mikejohnson51/climateR) or python/go/Rust applciations) this catalog is available as a JSON artifact [here](https://mikejohnson51.github.io/opendap.catalog/cat_params.json).
+
+```{r, eval  = FALSE}
+read_json('https://mikejohnson51.github.io/opendap.catalog/cat_params.json', simplifyVector = TRUE)
+```
+
+# Contents
+
+| Name      | Description | Details |
+|---------- | ----------- | -------- | 
+| id        | `opendap.catalog`  unique identifier                   | | 
+| grid.id   | `opendap.catalog`  unique  grid identifier             | See opendap.catalog::grids |
+| URL       | Location of resource                                   | |
+| tiled     | Is the resource temporally (T) or spatially (XY) tiled | See Vignette 3|
+| variable  | name of the variable in data description               | |
+| varname   | name of variable in data set description               | |
+| long_name | NetCDF Long Name attribute                             | |
+| units     | NetCDF Long Name units attribute                       | |
+| model     | Model Type/version                                     | Often GCM |
+| ensemble  | Model ensemble member                                  | |
+| scenario  | Model scenario                                         | Often RCPs |
+| T_name    | Name of time dimension                                 | |
+| duration  | start and end date of data (start/end)                 | |
+| interval  | time step between duration                             | |
+| nT        | number of time slices                                  | |
+
+# Example
+
+```{r}
+search <- filter(params, 
+                 grepl("NLDAS", id),
+                 grepl("FOR", model),
+                 grepl("potential evaporation", long_name),
+                 scenario == 'M.2.0',
+                 grepl("month", interval))
+
+
+glimpse(search)
+```
+
+Catalog item rather then URL!
+
+```{r}
+tx_2021_pet = dap(catolog = search, 
+                  AOI = AOI::aoi_get(state = "TX"),
+                  startDate = "2021-01-01", 
+                  endDate = "2021-12-31")
+```
+
+```{r, echo = FALSE}
+plot(tx_2021_pet$potevap_M.2.0)
+```
+
+# Grid Relation
+
+```{r}
+glimpse(grids)
+```
+
+| Name | Description | Details |
+|----- | ----------- | -------- | 
+| grid.id       | `opendap.catalog`  unique  grid identifier                      | |
+| X_name        | X dimension name in data set                                    | |
+| Y_name        | Y dimension name in data set                                    | |
+| X1            | The first X value in the X_name array                           | |
+| Xn            | The last X value in the X_name array                            | |
+| Y1            | The first Y value in the X_name array                           | |
+| Yn            | The last Y value in the X_name array                            | |
+| resX          | Resolution of X_name array                                      | |
+| resY          | Resolution of Y_name array                                      | |
+| ncols         | Number of columns in the XY array                               | |
+| nrows         | Number of rows in the XY array                                  | |
+| proj          | Data set projection                                             | |
+| toptobottom   | It is organized in left to right,top to bottom pixel order.     | |
+| tile          | If the dataset has a tiled XY partition, what is the tile name? | |
+
+```{r}
+glimpse(merge(search, grids))
+```
+
+Like `parms`, `grids` attributes can also be accessed as a JSON:
+
+```{r, eval  = FALSE}
+read_json('https://mikejohnson51.github.io/opendap.catalog/cat_grids.json', simplifyVector = TRUE)
+```
+
+
+# Challenge
+
+```{r}
+(search <- filter(params, 
+                  grepl("MOD16A2.006", id), 
+                  grepl("PET_500m", varname)))
+
+glimpse(merge(search, grids))
+```
+
+

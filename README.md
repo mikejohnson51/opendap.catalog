@@ -2,7 +2,7 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
 
-[![Dependencies](https://img.shields.io/badge/dependencies-7/33-orange?style=flat)](#)
+[![Dependencies](https://img.shields.io/badge/dependencies-5/26-orange?style=flat)](#)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit/)
 [![Website
@@ -58,6 +58,22 @@ In light of this, `opendap.catolog` provides three primary services.
 dap <- dap(URL = "https://cida.usgs.gov/thredds/dodsC/bcsd_obs", 
            AOI = AOI::aoi_get(state = "FL"), 
            startDate = "1995-01-01")
+#> source:        https://cida.usgs.gov/thredds/dodsC/bcsd_obs 
+#> varname(s):
+#>    > pr [mm/m] (monthly_sum_pr)
+#>    > prate [mm/d] (monthly_avg_prate)
+#>    > tas [C] (monthly_avg_tas)
+#>    > tasmax [C] (monthly_avg_tasmax)
+#>    > tasmin [C] (monthly_avg_tasmin)
+#>    > wind [m/s] (monthly_avg_wind)
+#> ==================================================
+#> diminsions:  62, 48, 1 (names: longitude,latitude,time)
+#> resolution:  0.125, 0.125, 1 months
+#> extent:      -87.688, -80.062, 25.188, 31.062 (xmin, xmax, ymin, ymax)
+#> crs:         +proj=longlat +a=6378137 +f=0.00335281066474748 +p...
+#> time:        1995-01-01 to 1995-01-01
+#> ==================================================
+#> values: 17,856 (vars*X*Y*T)
 
 str(dap, max.level = 1)
 #> List of 6
@@ -81,31 +97,42 @@ utils:::format.object_size(file.size(file), "auto")
 dap = dap(URL = file, 
           AOI = AOI::aoi_get(state = "FL"), 
           startDate = "2020-01-01", endDate = "2020-01-05")
+#> source:        /Users/mjohnson/Downloads/NEXGDM_srad_2020_v100.nc 
+#> varname(s):
+#>    > srad [MJ/day] (Shortwave radiation)
+#> ==================================================
+#> diminsions:  807, 693, 4 (names: x,y,time)
+#> resolution:  1000, 1000, 1 days
+#> extent:      796455, 1602455, 268505, 960505 (xmin, xmax, ymin, ymax)
+#> crs:         +proj=aea +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +u...
+#> time:        2020-01-02 to 2020-01-05
+#> ==================================================
+#> values: 2,237,004 (vars*X*Y*T)
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
-#### 2. A catalog of 7294 web resources (as of 02/2022)
+#### 2. A catalog of 14160 web resources (as of 02/2022)
 
 ``` r
 dplyr::glimpse(opendap.catalog::params)
-#> Rows: 7,294
+#> Rows: 14,160
 #> Columns: 15
-#> $ id        <chr> "maca_day", "maca_day", "maca_day", "maca_day", "maca_day", …
-#> $ grid.id   <chr> "maca_day", "maca_day", "maca_day", "maca_day", "maca_day", …
-#> $ URL       <chr> "http://thredds.northwestknowledge.net:8080/thredds/dodsC/ag…
-#> $ tiled     <chr> "T", "T", "T", "T", "T", "T", "T", "T", "T", "T", "T", "T", …
-#> $ variable  <chr> "huss", "huss", "huss", "huss", "huss", "huss", "huss", "hus…
-#> $ varname   <chr> "specific_humidity", "specific_humidity", "specific_humidity…
-#> $ long_name <chr> "Daily Mean Near-Surface Specific Humidity", "Daily Mean Nea…
-#> $ units     <chr> "kg kg-1", "kg kg-1", "kg kg-1", "kg kg-1", "kg kg-1", "kg k…
-#> $ model     <chr> "BNU-ESM", "CNRM-CM5", "CSIRO-Mk3-6-0", "bcc-csm1-1", "CanES…
-#> $ ensemble  <chr> "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", …
-#> $ scenario  <chr> "historical", "historical", "historical", "historical", "his…
+#> $ id        <chr> "hawaii_soest_1727_02e2_b48c", "hawaii_soest_1727_02e2_b48c"…
+#> $ grid.id   <chr> "71", "71", "71", "71", "71", "71", "71", "71", "71", "71", …
+#> $ URL       <chr> "https://apdrc.soest.hawaii.edu/erddap/griddap/hawaii_soest_…
+#> $ tiled     <chr> "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", …
+#> $ variable  <chr> "nudp", "nusf", "nuvdp", "nuvsf", "nvdp", "nvsf", "sudp", "s…
+#> $ varname   <chr> "nudp", "nusf", "nuvdp", "nuvsf", "nvdp", "nvsf", "sudp", "s…
+#> $ long_name <chr> "number of deep zonal velocity profiles", "number of surface…
+#> $ units     <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+#> $ model     <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+#> $ ensemble  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+#> $ scenario  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
 #> $ T_name    <chr> "time", "time", "time", "time", "time", "time", "time", "tim…
-#> $ duration  <chr> "1950-01-01/2005-12-31", "1950-01-01/2005-12-31", "1950-01-0…
-#> $ interval  <chr> "1 days", "1 days", "1 days", "1 days", "1 days", "1 days", …
-#> $ nT        <int> 20454, 20454, 20454, 20454, 20454, 20454, 20454, 20454, 2045…
+#> $ duration  <chr> "2001-01-01/2022-01-01", "2001-01-01/2022-01-01", "2001-01-0…
+#> $ interval  <chr> "365 days", "365 days", "365 days", "365 days", "365 days", …
+#> $ nT        <int> 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, …
 ```
 
 For use in other applications (e.g. [stars
@@ -134,15 +161,28 @@ read_json('https://mikejohnson51.github.io/opendap.catalog/cat_params.json',
     endDate   = "2010-01-31"
   )
 )
+#> source:        https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05.ncml 
+#> varname(s):
+#>    > PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))
+#>    > PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))
+#> ==================================================
+#> diminsions:  1336 - 1336, 240 - 1321, 5 (names: XDim,YDim,time)
+#> resolution:  463.313, 463.313, 8 days
+#> extent:      -8404029.365, -7785506.889, 3336314.872, 3447046.611 (xmin, xmax, ymin, ymax) -8404029.365, -7785506.889, 2724278.773, 3335851.559 (xmin, xmax, ymin, ymax)
+#> crs:         +proj=sinu +lon_0= +x_0= +y_0= +units=m +a=6371007...
+#> time:        2010-01-02 to 2010-02-03
+#> ==================================================
+#> values: 5,658,834,278,400 (vars*X*Y*T)
 #> class       : SpatRaster 
 #> dimensions  : 1561, 1336, 5  (nrow, ncol, nlyr)
 #> resolution  : 463.3127, 463.3127  (x, y)
 #> extent      : -8404261, -7785275, 2724047, 3447278  (xmin, xmax, ymin, ymax)
 #> coord. ref. : +proj=sinu +lon_0=0 +x_0=0 +y_0=0 +R=6371007.181 +units=m +no_defs 
 #> source      : memory 
-#> names       : 2010-01-02, 2010-01-10, 2010-01-18, 2010-01-26, 2010-02-03 
-#> min values  :  10.300000,   7.200000,   9.900001,   9.900001,  11.100000 
-#> max values  :       34.4,       24.1,       35.9,       37.5,       44.4
+#> names       :  2010-01-02,  2010-01-10,  2010-01-18,  2010-01-26,  2010-02-03 
+#> min values  :   10.300000,    7.200000,    9.900001,    9.900001,   11.100000 
+#> max values  :        34.4,        24.1,        35.9,        37.5,        44.4 
+#> unit        : kg/m^2/8day, kg/m^2/8day, kg/m^2/8day, kg/m^2/8day, kg/m^2/8day
 ```
 
 <img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />

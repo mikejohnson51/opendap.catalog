@@ -1,8 +1,8 @@
 ---
-title: "R DAP Utilites"
+title: "R Utilites"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{R DAP Utilites}
+  %\VignetteIndexEntry{R Utilites}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -10,10 +10,167 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  message = FALSE,
+  warning = FALSE,
   comment = "#>"
 )
 ```
 
 ```{r setup}
 library(opendap.catalog)
+library(terra)
+library(dplyr)
+```
+
+This Vignette focuses on the generalized R tooling for getting data from local and remote NetCDF(-esque) resources.
+
+# General Examples
+
+A lot of data lives online, and a lot lives on our computers. For the sake of demonstrating the utilities we focus on NetCDF data that is: 
+
+1. Local
+2. Web-Accessible _and_ Web-subsettable (e.g. OpenDAP)
+3. Web Data that must be downloaded
+
+In principle, 1 and 3 behave the same with respect to access. So this vignette highlights working with a large _local_ data set and an aggregated web-accessible _remote_ data set.
+
+The basic utilities demonstrated are: 
+
+- `dap_summary()`: see whats in the data
+- `dap_crop()`: identify the subset of the data you want for a space and time
+- `dap_get()`: get the identified data
+
+For cases where its applicable, these three utilities are wrapped in a single function  
+
+-`dap()`
+
+In many cases the local files we have contain more data then needed for analysis. In this example lets look at a data set with daily, Continental USA Solar Radiation data:
+
+```{r}
+url <- '/Users/mjohnson/Downloads/NEXGDM_srad_2020_v100.nc'
+# Size of file?
+utils:::format.object_size(file.size(url), "auto")
+```
+
+## dap_summary() 
+
+`dap_summary()` provides a convenient way to view the key details of resource, include the variables (units, and description), the X, Y, and T bounds, and the total number of values that would be extracted if the requested object was retrieved.
+
+```{r}
+dap_summary(url = url)
+```
+
+In total the 3.7 GB file, contains 5,533,920,000 values. In most cases this is overkill for the task at hand. Say instead of the full spatial and temporal bounds we just wanted a subset? `dap_crop()` provides a lazy way to define and examine a subset before making the request.
+
+## dap_crop()
+
+`dap_crop()` allows you to define the spatial and temporal extent of the data you want, prior to extracting data,  and returns a `data.frame` with the meta data regrading that subset. By default (`verbose = TRUE`), `dap_crop()` calls `dap_summary()` internally.
+
+```{r}
+# Solar Radiation in January over Colorado
+cropped <- dap_crop(URL = url, 
+                    AOI = AOI::aoi_get(state = "Colorado"),
+                    startDate = "2020-01-01",  
+                    endDate   = "2020-01-31")
+```
+
+The reported summary of the cropped object requires just .02% of the data from the entire resource:
+
+```{r}
+dplyr::glimpse(cropped)
+```
+
+Aside from the descriptive data, the most critical element is the `URL` which is a formed OpenDAP call for the AOI and time of interest. 
+
+```{r}
+cropped$URL
+```
+
+While these is URL/OpenDAP based calls intended for subsetting over http, and will _not_ work directyl on a local file, there is an internal function within `opendap.catalog` that converts OpenDAP strides (e.g. `[T][Y][X]`) to `RNetCDF` start/count syntax for local resources:
+
+```{r}
+dap_to_local(cropped[1,], get = FALSE) |> 
+  glimpse()
+```
+
+Now with our ideal extent defined, we need to get the data!
+
+## `dap_get()` 
+
+`dap_get()` can bring the data defined in either a URL or a `dap_crop()` `data.frame` into R as a `SpatRast` object.
+
+```{r}
+(srad = dap_get(cropped))
+```
+
+```{r, echo = FALSE}
+plot(srad$srad[[1:4]])
+```
+
+## `dap()`
+
+```{r}
+dap = dap(URL = url, 
+          AOI = AOI::aoi_get(state = "MI"), 
+          startDate = "2020-01-01")
+
+str(dap, max.level = 1)
+
+plot(rast(dap))
+```
+
+# Web Resource
+
+For this example, lets say you want the monthly observational data used for [BCSD downscaling]( http://gdo-dcp.ucllnl.org/downscaled_cmip_projections/dcpInterface.html). We know this data sits on a THREDDS data server maintained by the USGS. 
+
+Following the above examples for local file we can use the same process. This time we find the web-resource contains more then one variable:
+
+```{r}
+url <- "https://cida.usgs.gov/thredds/dodsC/bcsd_obs"
+dap_summary(url = url)
+```
+
+
+```{r}
+cropped = dap_crop(url, AOI = AOI::aoi_get(state = "CA"), startDate = '1995-01-01')
+```
+
+```{r}
+bcsd = dap_get(cropped)
+str(bcsd, max.level = 1)
+```
+```{r}
+(dap_get(cropped[1,]))
+```
+
+
+```{r}
+cropped_wind = dap_crop(url, AOI, startDate = '1995-01-01', varname = 'wind')
+```
+
+```{r}
+cropped_wind2 = dap_crop(url, AOI, startDate = '1995-01-01', varname = 'wind', verbose = FALSE)
+```
+
+
+```{r}
+dap = dap(URL = "https://cida.usgs.gov/thredds/dodsC/bcsd_obs", 
+          AOI = AOI::aoi_get(state = "MI"), 
+          startDate = "1995-01-01")
+
+str(dap, max.level = 1)
+```
+
+```{r}
+dap = dap(URL = "https://cida.usgs.gov/thredds/dodsC/bcsd_obs", 
+          AOI = AOI::aoi_get(state = "MI"), 
+          startDate = "1995-01-01", 
+          verbose = FALSE,
+          varname = "pr")
+
+str(dap, max.level = 1)
+```
+
+```{r, echo = FALSE}
+plot(rast(dap))
 ```

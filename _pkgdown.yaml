@@ -1,0 +1,36 @@
+reference:
+- title: R DAP utilites
+  desc: >
+    Functions to interface with gridded data resources
+  contents:
+  - dap_summary
+  - dap_crop
+  - dap_get
+  - dap
+
+- title: Data
+  desc: >
+      Exported data sets
+  contents:
+  - grids
+  - params
+
+navbar:
+  type: default
+  left:
+  - text: Intro
+    href: articles/index.html
+  - text: Reference
+    href: reference/index.html
+  - text: Articles
+    menu:
+    - text: R Utilites
+      href: articles/dap_utils.html
+    - text: OPeDAP catalog
+      href: articles/catalog.html
+    - text: XYT aggrrgations
+      href: articles/xyt_aggregation.html
+    - text: Going Parallel
+      href: articles/future.html
+    - text: Parameter Estimation
+      href: articles/parameter_estimation.html

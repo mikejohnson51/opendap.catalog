@@ -4,20 +4,16 @@
 \alias{dap_to_local}
 \title{Convert OpenDAP to start/count call}
 \usage{
-dap_to_local(dap)
-
-dap_to_local(dap)
+dap_to_local(dap, get = TRUE)
 }
 \arguments{
 \item{dap}{dap description}
+
+\item{get}{shpuld data be collected?}
 }
 \value{
 numeric array
-
-
 }
 \description{
-Convert OpenDAP to start/count call
-
 Convert OpenDAP to start/count call
 }

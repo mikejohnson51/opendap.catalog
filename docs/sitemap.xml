@@ -16,6 +16,9 @@
     <loc>/articles/dap_utils.html</loc>
   </url>
   <url>
+    <loc>/articles/future.html</loc>
+  </url>
+  <url>
     <loc>/articles/index.html</loc>
   </url>
   <url>
@@ -46,6 +49,9 @@
     <loc>/reference/dap_meta.html</loc>
   </url>
   <url>
+    <loc>/reference/dap_summary.html</loc>
+  </url>
+  <url>
     <loc>/reference/dap_to_local.html</loc>
   </url>
   <url>
@@ -71,6 +77,12 @@
   </url>
   <url>
     <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/make_ext.html</loc>
+  </url>
+  <url>
+    <loc>/reference/make_vect.html</loc>
   </url>
   <url>
     <loc>/reference/omit.na.html</loc>

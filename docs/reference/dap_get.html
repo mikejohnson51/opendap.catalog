@@ -23,6 +23,9 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li>
+  <a href="../articles/index.html">Intro</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
@@ -32,16 +35,19 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/catalog.html">OpenDAP catalog</a>
+      <a href="../articles/dap_utils.html">R Utilites</a>
     </li>
     <li>
-      <a href="../articles/dap_utils.html">R DAP Utilites</a>
+      <a href="../articles/catalog.html">OPeDAP catalog</a>
+    </li>
+    <li>
+      <a href="../articles/xyt_aggregation.html">XYT aggrrgations</a>
+    </li>
+    <li>
+      <a href="../articles/future.html">Going Parallel</a>
     </li>
     <li>
       <a href="../articles/parameter_estimation.html">Parameter Estimation</a>
-    </li>
-    <li>
-      <a href="../articles/xyt_aggregation.html">Space and Time Aggregates</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
@@ -69,13 +75,15 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">dap_get</span><span class="op">(</span><span class="va">dap</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">dap_get</span><span class="op">(</span><span class="va">dap</span>, varname <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>dap</dt>
 <dd><p>data.frame from catolog or dap_crop</p></dd>
+<dt>varname</dt>
+<dd><p>name of variable to extract. If NULL, then get all</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>

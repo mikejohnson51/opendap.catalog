@@ -4,7 +4,15 @@
 \alias{dap}
 \title{Get DAP}
 \usage{
-dap(URL = NULL, catolog = NULL, AOI = NULL, startDate = NULL, endDate = NULL)
+dap(
+  URL = NULL,
+  catolog = NULL,
+  AOI = NULL,
+  startDate = NULL,
+  endDate = NULL,
+  varname = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{URL}{local file path or dodC URL}
@@ -16,6 +24,10 @@ dap(URL = NULL, catolog = NULL, AOI = NULL, startDate = NULL, endDate = NULL)
 \item{startDate}{start date (YYYY-MM-DD)}
 
 \item{endDate}{end date (YYYY- MM-DD)}
+
+\item{varname}{name of variable to extract. If NULL, then get all}
+
+\item{verbose}{Should dap_summary be printed?}
 }
 \value{
 data.frame

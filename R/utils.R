@@ -21,40 +21,23 @@ dap_xyzv = function(obj, varmeta = FALSE){
 
   if(varmeta){
     for(i in 1:nrow(raw)){
-    ll[[i]] = data.frame(
-      varname = raw$varname[i],
-      units = try_att(obj, raw$varname[i], "units"),
-      long_name = try_att(obj, raw$varname[i], "long_name"))
-    }
 
+    if(ncmeta::nc_var(obj, raw$varname[i])$ndims > 3){
+      ll[[i]] = NULL
+      warning("We do not yet support 4D datasets:", raw$varname[i])
+    } else {
+      ll[[i]] = data.frame(
+        varname = raw$varname[i],
+        units = try_att(obj, raw$varname[i], "units"),
+        long_name = try_att(obj, raw$varname[i], "long_name"))
+    }
+    }
 
   merge(raw, do.call(rbind, ll), by = "varname")
 
   } else {
     raw
   }
-
-}
-
-#' Read from a THREDDS catalog HTML page
-#' @description Scraps a TDS landing page for avalaible datasets
-#' @param URL URL to THREDDS catalog
-#' @param id character. Uniquely named TDS identifier
-#' @return data.frame with (link, URL, id)
-#' @export
-#' @importFrom rvest read_html html_nodes html_attr
-
-read_tds = function(URL, id){
-
-  dat = read_html(URL)
-  dat = html_nodes(dat, "a")
-  dat = data.frame(link = html_attr(dat, "href"), id = id)
-
-  dat$link =  gsub(".*=","", dat$link)
-
-  dat$URL = paste0(dirname(URL), "/dodsC/", dat$link, ".nc")
-
-  dat[!grepl("http|https|html", dat$link),]
 
 }
 
@@ -116,7 +99,7 @@ variable_meta = function(raw, verbose = TRUE){
   for(i in 1:nrow(tmp)){
 
     ll[[i]] = tryCatch({
-      t = dap_xyzv(paste0(tmp$URL[i], "#fillmismatch"), varmeta = TRUE)
+      t = dap_xyzv(obj = paste0(tmp$URL[i], "#fillmismatch"), varmeta = TRUE)
       t$variable = tmp$variable[i]
       t
     }, error = function(e){

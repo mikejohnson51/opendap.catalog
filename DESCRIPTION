@@ -8,12 +8,9 @@ Description: What the package does (one paragraph).
 Depends: 
     R(>= 3.5.0)
 Imports: 
-    doParallel,
-    foreach,
+    future.apply,
     ncmeta,
-    parallel,
     RNetCDF,
-    rvest,
     terra
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -23,6 +20,9 @@ URL: https://github.com/mikejohnson51/opendap.catalog
 BugReports: https://github.com/mikejohnson51/opendap.catalog/issues
 LazyData: true
 Suggests: 
-    rmarkdown,
-    knitr
+    AOI,
+    dplyr,
+    future,
+    knitr,
+    rmarkdown
 VignetteBuilder: knitr

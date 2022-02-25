@@ -45,7 +45,7 @@ parse_date = function(duration, interval){
 
   degree = grepl("degree", try_att(nc, X_name, "units"), ignore.case = TRUE)
 
-  if(length(nc_grid_mapping) == 0) {
+  if(nrow(nc_grid_mapping) == 0) {
 
     if(degree) {
       message(paste("No projection information found. \n",
@@ -84,7 +84,7 @@ parse_date = function(duration, interval){
     }
   }
 
-  if(any(xx > 180) & degree) { xx = xx - 360}
+  if(any(xx > 180) & degree) { xx = xx - 360 }
 
   xrange <- c(min(xx), max(xx))
   resx <- (xrange[2] - xrange[1]) / (ncols-1)

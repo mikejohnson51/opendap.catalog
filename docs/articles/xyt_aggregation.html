@@ -40,6 +40,9 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
+  <a href="../articles/index.html">Intro</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
@@ -50,16 +53,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/catalog.html">OpenDAP catalog</a>
+      <a href="../articles/dap_utils.html">R Utilites</a>
     </li>
     <li>
-      <a href="../articles/dap_utils.html">R DAP Utilites</a>
+      <a href="../articles/catalog.html">OPeDAP catalog</a>
+    </li>
+    <li>
+      <a href="../articles/xyt_aggregation.html">XYT aggrrgations</a>
+    </li>
+    <li>
+      <a href="../articles/future.html">Going Parallel</a>
     </li>
     <li>
       <a href="../articles/parameter_estimation.html">Parameter Estimation</a>
-    </li>
-    <li>
-      <a href="../articles/xyt_aggregation.html">Space and Time Aggregates</a>
     </li>
   </ul>
 </li>
@@ -95,12 +101,117 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mikejohnson51/opendap.catalog" class="external-link">opendap.catalog</a></span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mikejohnson51/opendap.catalog" class="external-link">opendap.catalog</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/terra/" class="external-link">terra</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></code></pre></div>
+<div class="section level2">
+<h2 id="xy-aggregates">XY Aggregates<a class="anchor" aria-label="anchor" href="#xy-aggregates"></a>
+</h2>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">mod</span>   <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">grids</span>, <span class="va">grid.id</span> <span class="op">==</span> <span class="st">"XY_modis"</span><span class="op">)</span>
+<span class="va">bboxs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span> <span class="fu"><a href="../reference/make_vect.html">make_vect</a></span><span class="op">(</span><span class="va">mod</span><span class="op">[</span><span class="va">x</span>,<span class="op">]</span><span class="op">)</span><span class="op">}</span><span class="op">)</span><span class="op">)</span>
+
+<span class="va">AOI_vect</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/project.html" class="external-link">project</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"conus"</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crs.html" class="external-link">crs</a></span><span class="op">(</span><span class="va">bboxs</span><span class="op">)</span><span class="op">)</span>
+
+<span class="op">{</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bboxs</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">AOI_vect</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">}</span></code></pre></div>
+<p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
+<p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">modis_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'MOD16A2.006'</span>, <span class="va">varname</span> <span class="op">==</span> <span class="st">'PET_500m'</span><span class="op">)</span>
+
+<span class="fu"><a href="https://dplyr.tidyverse.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">modis_ex</span><span class="op">)</span>
+<span class="co">#&gt; Rows: 1</span>
+<span class="co">#&gt; Columns: 15</span>
+<span class="co">#&gt; $ id        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "MOD16A2.006"</span>
+<span class="co">#&gt; $ grid.id   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "XY_modis"</span>
+<span class="co">#&gt; $ URL       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006"</span>
+<span class="co">#&gt; $ tiled     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "XY_modis"</span>
+<span class="co">#&gt; $ variable  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA</span>
+<span class="co">#&gt; $ varname   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "PET_500m"</span>
+<span class="co">#&gt; $ long_name <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "MODIS Gridded 500m 8-day Composite potential Evapotranspira…</span>
+<span class="co">#&gt; $ units     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "kg/m^2/8day"</span>
+<span class="co">#&gt; $ model     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA</span>
+<span class="co">#&gt; $ ensemble  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA</span>
+<span class="co">#&gt; $ scenario  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA</span>
+<span class="co">#&gt; $ T_name    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "time"</span>
+<span class="co">#&gt; $ duration  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "2001-01-01/2022-02-02"</span>
+<span class="co">#&gt; $ interval  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "8 days"</span>
+<span class="co">#&gt; $ nT        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 970</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
+<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="../reference/dap.html">dap</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">modis_ex</span>, 
+          AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>, 
+          startDate <span class="op">=</span> <span class="st">"2010-01-01"</span>, 
+          endDate   <span class="op">=</span> <span class="st">"2010-01-31"</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="co">#&gt; source:        https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05.ncml </span>
+<span class="co">#&gt; varname(s):</span>
+<span class="co">#&gt;    &gt; PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))</span>
+<span class="co">#&gt;    &gt; PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))</span>
+<span class="co">#&gt; ==================================================</span>
+<span class="co">#&gt; diminsions:  1336 - 1336, 240 - 1321, 5 (names: XDim,YDim,time)</span>
+<span class="co">#&gt; resolution:  463.313, 463.313, 8 days</span>
+<span class="co">#&gt; extent:      -8404029.365, -7785506.889, 3336314.872, 3447046.611 (xmin, xmax, ymin, ymax) -8404029.365, -7785506.889, 2724278.773, 3335851.559 (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; crs:         +proj=sinu +lon_0= +x_0= +y_0= +units=m +a=6371007...</span>
+<span class="co">#&gt; time:        2010-01-02 to 2010-02-03</span>
+<span class="co">#&gt; ==================================================</span>
+<span class="co">#&gt; values: 5,658,834,278,400 (vars*X*Y*T)</span>
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   2.883   1.206  19.922</span></code></pre></div>
+<p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+</div>
+<div class="section level2">
+<h2 id="t-aggregates">T Aggregates<a class="anchor" aria-label="anchor" href="#t-aggregates"></a>
+</h2>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">tmp</span> <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, 
+              <span class="va">id</span> <span class="op">==</span> <span class="st">"maca_day"</span>, 
+              <span class="va">variable</span> <span class="op">==</span> <span class="st">"huss"</span>,
+              <span class="va">model</span> <span class="op">==</span> <span class="st">"BNU-ESM"</span><span class="op">)</span>
+
+<span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">tmp</span>, <span class="va">id</span>, <span class="va">variable</span>, <span class="va">model</span>, <span class="va">scenario</span>, <span class="va">duration</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 5</span></span>
+<span class="co">#&gt;   id       variable model   scenario   duration             </span>
+<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> maca_day huss     BNU-ESM historical 1950-01-01/2005-12-31</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> maca_day huss     BNU-ESM rcp45      2006-01-01/2099-12-31</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> maca_day huss     BNU-ESM rcp85      2006-01-01/2099-12-31</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">maca_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">tmp</span>,  <span class="va">scenario</span> <span class="op"><a href="https://rdrr.io/pkg/terra/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"historical"</span>, <span class="st">'rcp85'</span><span class="op">)</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
+  <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="../reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">maca_ex</span>, 
+                 AOI <span class="op">=</span>  <span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"NC"</span><span class="op">)</span>, 
+                 startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2006-01-05"</span><span class="op">)</span> |&gt; 
+    <span class="fu"><a href="../reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="co">#&gt; source:        http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_macav2metdata_huss_BNU-ESM_r1i1p1_historical_1950_2005_CONUS_daily.nc </span>
+<span class="co">#&gt; varname(s):</span>
+<span class="co">#&gt;    &gt; specific_humidity [kg kg-1] (Daily Mean Near-Surface Specific Humidity)</span>
+<span class="co">#&gt;    &gt; specific_humidity [kg kg-1] (Daily Mean Near-Surface Specific Humidity)</span>
+<span class="co">#&gt; ==================================================</span>
+<span class="co">#&gt; diminsions:  214, 67, 7 (names: lon,lat,time) 214, 67, 5 (names: lon,lat,time)</span>
+<span class="co">#&gt; resolution:  0.042, 0.042, 1 days</span>
+<span class="co">#&gt; extent:      -84.314, -75.44, 33.855, 36.605 (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; crs:         +proj=longlat +a=6378137 +f=0.00335281066474748 +p...</span>
+<span class="co">#&gt; time:        2005-12-25 to 2005-12-31</span>
+<span class="co">#&gt; ==================================================</span>
+<span class="co">#&gt; values: 200,732 143,380 (vars*X*Y*T)</span>
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.106   0.040   1.659</span>
+
+
+<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_historical</span>, <span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_rcp85</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 

@@ -10,10 +10,80 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
   comment = "#>"
 )
 ```
 
 ```{r setup}
 library(opendap.catalog)
+library(terra)
+library(dplyr)
+```
+
+# XY Aggregates
+
+```{r}
+mod   = filter(grids, grid.id == "XY_modis")
+bboxs = vect(sapply(1:nrow(mod), function(x){ make_vect(mod[x,])}))
+
+AOI_vect = project(vect(AOI::aoi_get(state = "conus")), crs(bboxs))
+
+{plot(bboxs)
+plot(AOI_vect, add = TRUE)}
+```
+
+```{r, echo = FALSE}
+AOI_vect_fl = AOI_vect[AOI_vect$state_abbr == "FL",]
+bbox_int = terra::relate(bboxs, AOI_vect_fl, "intersects")
+
+
+{plot(bboxs[bbox_int[,1], ])
+plot(AOI_vect_fl, add = TRUE)}
+```
+```{r}
+modis_ex = filter(params, id == 'MOD16A2.006', varname == 'PET_500m')
+
+glimpse(modis_ex)
+```
+
+```{r, eval = T}
+system.time({
+dap = dap(catolog = modis_ex, 
+          AOI = AOI::aoi_get(state = "FL"), 
+          startDate = "2010-01-01", 
+          endDate   = "2010-01-31")
+})
+```
+
+```{r, echo = FALSE, eval = T}
+plot(dap)
+```
+
+# T Aggregates
+
+```{r, eval = T}
+tmp = dplyr::filter(params, 
+              id == "maca_day", 
+              variable == "huss",
+              model == "BNU-ESM")
+
+(select(tmp, id, variable, model, scenario, duration))
+```
+
+
+```{r}
+maca_ex = filter(tmp,  scenario %in% c("historical", 'rcp85'))
+
+system.time({
+  dap = dap_crop(catolog = maca_ex, 
+                 AOI =  AOI::aoi_get(state = "NC"), 
+                 startDate = "2005-12-25", endDate = "2006-01-05") |> 
+    dap_get()
+})
+
+
+plot(c(dap$specific_humidity_historical, dap$specific_humidity_rcp85))
+
 ```

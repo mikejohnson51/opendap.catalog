@@ -1,0 +1,56 @@
+---
+title: "Going Parallel!"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Going Parallel!}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(opendap.catalog)
+library(terra)
+library(dplyr)
+library(future)
+plan(sequential)
+```
+
+
+```{r}
+huss = dplyr::filter(params, id == 'maca_month', variable == 'huss')
+
+
+cropped = dap_crop(catolog = huss,
+                    AOI = AOI::aoi_get(state = "IA"),
+                    startDate = "2010-01-01",
+                    endDate = "2010-12-31",
+                   verbose = FALSE)
+
+glimpse(cropped)
+```
+
+```{r, eval=T}
+system.time({
+ sequential = dap_get(dap = cropped[1,])
+})
+```
+
+```{r, eval=T}
+library(future)
+plan(multisession, workers = 7)
+
+system.time({
+  ms = dap_get(cropped)
+})
+```
+
+

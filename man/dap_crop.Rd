@@ -9,7 +9,9 @@ dap_crop(
   catolog = NULL,
   AOI = NULL,
   startDate = NULL,
-  endDate = NULL
+  endDate = NULL,
+  varname = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -22,6 +24,10 @@ dap_crop(
 \item{startDate}{start date (YYYY-MM-DD)}
 
 \item{endDate}{end date (YYYY- MM-DD)}
+
+\item{varname}{name of variable to extract. If NULL, then get all}
+
+\item{verbose}{Should dap_summary be printed?}
 }
 \value{
 data.frame

@@ -1,12 +1,63 @@
-################################################################################
+go_get_dap_data = function(dap){
+  tryCatch({
+    if(grepl("http", dap$URL)){
+      var_to_terra(get_data(dap), dap)
+    } else {
+      var_to_terra(dap_to_local(dap), dap)
+    }
+  }, error = function(e){
+    dap$URL
+  })
+}
+
+#' Convert catalog entry to vect
+#' @param cat catalog entry
+#' @return vect object
+#' @export
+#' @importFrom terra vect
+
+make_vect = function(cat){
+
+  xmin = min(cat$Xn, cat$X1)
+  xmax = max(cat$Xn, cat$X1)
+  ymin = min(cat$Yn, cat$Y1)
+  ymax = max(cat$Yn, cat$Y1)
+
+  vect(paste0("POLYGON ((",
+              xmin, " ", ymin, ", ",
+              xmin, " ", ymax, ", ",
+              xmax, " ", ymax, ", ",
+              xmax, " ", ymin, ", ",
+              xmin, " ", ymin ,"))"),
+       crs = cat$proj)
+}
+
+#' Convert catalog entry to extent
+#' @param cat catalog entry
+#' @return SpatExtent object
+#' @export
+#' @importFrom terra ext
+
+make_ext = function(cat){
+  terra::ext(c(
+    min(cat$Xn, cat$X1),
+    max(cat$Xn, cat$X1),
+    min(cat$Yn, cat$Y1),
+    max(cat$Yn, cat$Y1)))
+}
 
 #' Convert OpenDAP to start/count call
 #' @param dap dap description
+#' @param get shpuld data be collected?
 #' @return numeric array
 #' @export
 #' @importFrom RNetCDF open.nc close.nc var.inq.nc var.get.nc
 
-dap_to_local = function(dap){
+dap_to_local = function(dap, get = TRUE){
+
+  if(nrow(dap) != 1){
+    stop("This function process only 1 DAP row at a time... currently there are ", nrow(dap))
+  }
 
   nc = open.nc(sub("\\?.*", "", dap$URL))
   on.exit(close.nc(nc))
@@ -24,36 +75,120 @@ dap_to_local = function(dap){
                        c(T_var_info, Y_var_info, X_var_info))
 
   start = (as.numeric(sapply(strsplit(k, ":"),"[[",1)) + 1)[dimid_order]
+
   count = (c(dap$Tdim, dap$nrows, dap$ncols))[dimid_order]
 
-  var.get.nc(nc, dap$varname,
-             start = start,
-             count = count,
-             unpack = TRUE)
+  if(get){
+    var.get.nc(nc, dap$varname,
+               start = start,
+               count = count,
+               unpack = TRUE)
+  } else {
+    data.frame(file = sub("\\?.*", "", dap$URL),
+               variable = dap$varname,
+               start = I(list(start)),
+               count = I(list(count)), unpack = TRUE)
+  }
 
 }
 
 #' Print Summary Information About a OpenDAP Resource
 #' @description Print summary information about a DAP summary
-#' @param dap data.frame from catolog or dap_crop
+#' @param dap data.frame from catalog or dap_crop
+#' @param url Unique Resource Identifier (http or local)
 #' @export
 
-dap.summary = function(dap){
+dap_summary = function(dap = NULL, url = NULL){
 
-  xy   = expand.grid(unique(dap$ncols), unique(dap$nrows))
-  cells = prod(xy[,1] * xy[,2])
-  xDim = paste0(xy[,1], collapse = " - ")
-  yDim = paste0(xy[,2], collapse = " - ")
-  tDim = unique(dap$Tdim)
-  tI   = unique(dap$interval)
-  var =  paste0(dap$varname, " [", dap$units,"] (", dap$long_name, ")")
+if(!is.null(url) & is.null(dap)){
+  dap = dap_crop(url)
+} else{
+  xy    = expand.grid(unique(dap$ncols), unique(dap$nrows))
+  cells = prod(xy[, 1] * xy[, 2])
+  xDim  = formatC(
+    paste0(xy[, 1], collapse = " - "),
+    big.mark = ",",
+    digits = 0,
+    format = "f"
+  )
+  yDim  = formatC(
+    paste0(xy[, 2], collapse = " - "),
+    big.mark = ",",
+    digits = 0,
+    format = "f"
+  )
+  tDim  = formatC(
+    unique(dap$Tdim),
+    big.mark = ",",
+    digits = 0,
+    format = "f"
+  )
+  ext   = paste0(
+    round(unique(pmin(dap$X1, dap$Xn)), 3),
+    ", ",
+    round(unique(pmax(dap$X1, dap$Xn)), 3),
+    ", ",
+    round(unique(pmin(dap$Y1, dap$Yn)), 3),
+    ", ",
+    round(unique(pmax(dap$Y1, dap$Yn)), 3),
+    " (xmin, xmax, ymin, ymax)"
+  )
+  var   = paste0(dap$varname, " [", dap$units, "] (", dap$long_name, ")")
+  a = dap$proj[1]
 
-cat("vars:  ", paste(">", var, collapse = "\n\t"))
-cat("\nX:     ", formatC(xDim, big.mark = ",", digits = 0, format = "f"), paste0("(", dap$X_name[1], ")"))
-cat("\nY:     ", formatC(yDim, big.mark = ",", digits = 0, format = "f"), paste0("(", dap$Y_name[1], ")"))
-cat("\nT:     ", formatC(tDim, big.mark = ",", digits = 0, format = "f"), paste0("(", dap$T_name[1], " - ", unique(dap$interval), ")"))
-cat("\nvalues:", formatC(cells * tDim * length(var),
-        big.mark = ",", digits = 0, format = "f"), "(vars*X*Y*T)")
+  {
+    cat("source:       ",    strsplit(dap$URL[1], "\\?")[[1]][1], "\n")
+    cat("varname(s):\n  ", paste(">", var, collapse = "\n   "))
+    cat(paste0("\n", paste(rep("=", 50), collapse = "")))
+    cat(
+      "\ndiminsions: ",
+      paste0(
+        xDim,
+        ", ",
+        yDim,
+        ", ",
+        tDim,
+        " (names: ",
+        dap$X_name[1],
+        ",",
+        dap$Y_name[1],
+        ",",
+        dap$T_name[1],
+        ")"
+      )
+    )
+    cat(
+      "\nresolution: ",
+      paste0(
+        round(dap$resX[1], 3),
+        ", ",
+        round(dap$resY[1], 3),
+        ", ",
+        dap$interval[1]
+      )
+    )
+    cat("\nextent:     ",  ext)
+    cat("\ncrs:        ", ifelse(nchar(a) > 50, paste0(strtrim(a, 50), '...'), a))
+    cat(
+      "\ntime:       ",
+      as.character(dap$startDate[1]),
+      'to',
+      as.character(dap$endDate[1])#,
+      #paste0("(by: ", dap$interval[1], ")")
+    )
+    cat(paste0("\n", paste(rep("=", 50), collapse = "")))
+    cat(
+      "\nvalues:",
+      formatC(
+        cells * as.numeric(tDim) * length(var),
+        big.mark = ",",
+        digits = 0,
+        format = "f"
+      ),
+      "(vars*X*Y*T)"
+    )
+  }
+  }
 }
 
 #' @title Crop DAP file
@@ -63,6 +198,8 @@ cat("\nvalues:", formatC(cells * tDim * length(var),
 #' @param AOI sf object
 #' @param startDate start date (YYYY-MM-DD)
 #' @param endDate  end date (YYYY- MM-DD)
+#' @param varname  name of variable to extract. If NULL, then get all
+#' @param verbose  Should dap_summary be printed?
 #' @details if AOI is NULL no spatial crop is executed. If startDate AND endDate are NULL, no temporal crop is executed. If just endDate is NULL it defaults to the startDate.
 #' @return data.frame
 #' @export
@@ -72,13 +209,17 @@ dap_crop = function(URL       = NULL,
                     catolog   = NULL,
                     AOI       = NULL,
                     startDate = NULL,
-                    endDate   = NULL){
+                    endDate   = NULL,
+                    varname   = NULL,
+                    verbose   = TRUE
+                    ){
 
   if(!is.null(URL)){
-    catolog = read_dap_file(URL, id = "local")
-    catolog$tiled = ""
+    catolog       <-  read_dap_file(URL, id = "local")
+    catolog$tiled <-  ""
   }
 
+  ## TIME
   if(is.null(startDate) & is.null(endDate)){
     catolog$T = paste0("[0:1:", catolog$nT - 1 ,"]")
     catolog$Tdim = catolog$nT
@@ -86,7 +227,6 @@ dap_crop = function(URL       = NULL,
     catolog = cbind(catolog, data.frame(startDate = tmp[,1], endDate = tmp[,2]))
 
   } else {
-    ### TIME CROP!!
     if(is.null(endDate)){ endDate = startDate}
 
     if(grepl("hour", catolog$interval[1])){
@@ -127,22 +267,14 @@ dap_crop = function(URL       = NULL,
       stop("Requested Time not found in ",  unique(dur), call. = FALSE)
     }
   }
-  #####
 
+  ## SPACE (XY)
   if(is.null(AOI)){
     catolog$X = paste0("[0:1:", catolog$ncols - 1 ,"]")
     catolog$Y = paste0("[0:1:", catolog$nrows - 1 ,"]")
   } else {
 
     AOIspat = terra::vect(AOI)
-
-    make_ext = function(cat){
-      terra::ext(c(
-        min(cat$Xn, cat$X1),
-        max(cat$Xn, cat$X1),
-        min(cat$Yn, cat$Y1),
-        max(cat$Yn, cat$Y1)))
-    }
 
      if(catolog$id[1] != 'local'){
         grids = opendap.catalog::grids
@@ -164,6 +296,15 @@ dap_crop = function(URL       = NULL,
       }, error = function(e) { NULL }
       )})
 
+    drops = which(sapply(out, is.null))
+
+    if(length(drops) != 0){
+      catolog = catolog[-drops,]
+      out     = catolog[-drops]
+    }
+
+    if(nrow(catolog) < 1){ stop("No resources intersect with provided AOI", call. = FALSE) }
+
     for(i in 1:nrow(catolog)){
 
       X_coords = seq(catolog$X1[i], catolog$Xn[i], length.out = catolog$ncols[i])
@@ -181,17 +322,30 @@ dap_crop = function(URL       = NULL,
       catolog$ncols[i] = abs(diff(xs)) + 1
       catolog$nrows[i] = abs(diff(ys)) + 1
     }
-  }
+}
 
-  if(catolog$tiled[1] == "XY"){
+
+  if(any(grepl("XY", catolog$tiled))){
     catolog$URL = paste0(catolog$URL, "/", catolog$tile, ".ncml?", catolog$varname, catolog$T, catolog$Y, catolog$X)
   } else {
     catolog$URL = paste0(catolog$URL, "?", catolog$varname, catolog$T, catolog$Y, catolog$X)
   }
 
+  if(!is.null(varname)){
+
+    if(!varname %in% catolog$varname){
+      stop('variable in resource include:\n',
+           paste(catolog$varname, collapse = ", "))
+    }
+
+    catolog = catolog[catolog$varname %in% varname,]
+  }
+
   catolog$X = NULL
   catolog$Y = NULL
   catolog$T = NULL
+
+  if(verbose){ dap_summary(catolog)}
 
   catolog
 }
@@ -199,90 +353,50 @@ dap_crop = function(URL       = NULL,
 
 #' Download DAP resource
 #' @param dap data.frame from catolog or dap_crop
+#' @param varname  name of variable to extract. If NULL, then get all
 #' @return SpatRaster
 #' @export
 #' @importFrom RNetCDF open.nc var.get.nc
-#' @importFrom terra sprc merge
-#' @importFrom foreach `%dopar%` foreach
-#' @importFrom doParallel registerDoParallel
-#' @importFrom parallel detectCores
+#' @importFrom terra sprc merge units nlyr
+#' @importFrom future.apply future_lapply
 
-dap_get = function(dap){
+dap_get = function(dap, varname = NULL){
 
-  suppressWarnings({
-  i <- NULL
-  `%dopar%` <- foreach::`%dopar%`
-  #doMC::registerDoMC()
-  doParallel::registerDoParallel(cores = parallel::detectCores() - 1)
+  if(!is.null(varname)){
 
-  out = foreach::foreach(i = 1:nrow(dap)) %dopar% {
-      tryCatch({
-        if(grepl("http", dap$URL[i])){
-          get_data(dap[i,])
-        } else {
-          dap_to_local(dap[i,])
-        }
-      }, error = function(e){
-        dap$URL[i]
-      })
+    if(!varname %in% dap$varname){
+      stop('variable in resource include:\n',
+           paste(dap$varname, collapse = ", "))
     }
 
-  # out = list()
-  #
-  # for(i in 1:nrow(dap)){
-  #         out[[i]] = tryCatch({
-  #           if(grepl("http", dap$URL[i])){
-  #             get_data(dap[i,])
-  #           } else {
-  #             dap_to_local(dap[i,])
-  #           }
-  #         }, error = function(e){
-  #           dap$URL[i]
-  #         })
-  # }
+    dap = dap[dap$varname %in% varname,]
+  }
 
-  out = lapply(1:length(out), function(x){var_to_terra(out[[x]], dap[x,])})
+  out = future_lapply(1:nrow(dap), FUN = function(x){ go_get_dap_data(dap[x,]) })
+
+  #out = lapply(1:length(out), function(x){var_to_terra(out[[x]], dap[x,])})
   names(out) =  sub("_$", "", paste0(dap$varname, "_", dap$scenario))
 
-  if(any(dap$tiled == "XY")){
-    terra::merge(terra::sprc(out))
+  if(any(grepl("XY", dap$tiled))){
+    u = unique(unlist(lapply(out, units)))
+    if(length(u) == 1) {
+      out = terra::merge(terra::sprc(out))
+      terra::units(out) = rep(u, nlyr(out))
+      out
+    } else {
+      out
+    }
+  } else if(any(dap$tiled == "T")) {
+    #TODO
+    # group dap by id, varname, units
+    # merge by ID if units are the same
+    # if units are the same
+    out
   } else {
     out
   }
-  })
 }
 
-#' Convert OpenDAP to start/count call
-#' @param dap dap description
-#' @return
-#' @export
-#' @importFrom RNetCDF open.nc close.nc var.inq.nc var.get.nc
-
-dap_to_local = function(dap){
-
-  nc = open.nc(sub("\\?.*", "", dap$URL))
-  on.exit(close.nc(nc))
-
-  k = regmatches(dap$URL, gregexpr("\\[.*?\\]", dap$URL))[[1]]
-  k  <- gsub("[", "", k, fixed = TRUE)
-  k  <- gsub("]", "", k, fixed = TRUE)
-
-  nc_var_info <- var.inq.nc(nc, dap$varname)
-  X_var_info  <- var.inq.nc(nc, dap$X_name)$dimids
-  Y_var_info <- var.inq.nc(nc, dap$Y_name)$dimids
-  T_var_info <- var.inq.nc(nc, dap$T_name)$dimids
-
-  dimid_order <- match(nc_var_info$dimids,
-                       c(T_var_info, Y_var_info, X_var_info))
-
-  start = (as.numeric(sapply(strsplit(k, ":"),"[[",1)) + 1)[dimid_order]
-  count = (c(dap$Tdim, dap$nrows, dap$ncols))[dimid_order]
-
-  var.get.nc(nc, dap$varname,
-             start = start,
-             count = count,
-             unpack = TRUE)
-}
 
 #' Variable Array to Terra
 #' @param var array
@@ -310,9 +424,15 @@ var_to_terra = function(var, dap){
                   nlyrs = dap$Tdim,
                   crs   = dap$proj)
 
+  if(length(dim(var)) == 2) {
+    dim(var) = c(dim(var), 1)
+  }
+
   r[] = var
 
   if(dap$toptobottom){ r =  terra::flip(r) }
+
+  terra::units(r) = dap$units
 
   names(r) = seq.POSIXt(as.POSIXct(dap$startDate),
                         as.POSIXct(dap$endDate),
@@ -329,6 +449,8 @@ var_to_terra = function(var, dap){
 #' @param AOI sf object
 #' @param startDate start date (YYYY-MM-DD)
 #' @param endDate  end date (YYYY- MM-DD)
+#' @param varname  name of variable to extract. If NULL, then get all
+#' @param verbose  Should dap_summary be printed?
 #' @details Wraps dap_get and dap_crop into one.
 #' If AOI is NULL no spatial crop is executed. If startDate AND endDate are NULL, no temporal crop is executed. If just endDate is NULL it defaults to the startDate.
 #' @return data.frame
@@ -339,14 +461,20 @@ dap = function(URL       = NULL,
                catolog   = NULL,
                AOI       = NULL,
                startDate = NULL,
-               endDate   = NULL){
+               endDate   = NULL,
+               varname   = NULL,
+               verbose   = TRUE){
 
-  dap_get(dap_crop(URL = URL,
-                   catolog = catolog,
-                   AOI = AOI,
-                   startDate = startDate,
-                   endDate = endDate)
-  )
+  dap = dap_crop(URL = URL,
+                 catolog = catolog,
+                 AOI = AOI,
+                 startDate = startDate,
+                 endDate = endDate,
+                 varname = varname,
+                 verbose = verbose)
+
+  dap_get(dap)
+
 }
 
 
