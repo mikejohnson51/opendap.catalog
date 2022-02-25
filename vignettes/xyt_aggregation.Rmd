@@ -77,10 +77,9 @@ tmp = dplyr::filter(params,
 maca_ex = filter(tmp,  scenario %in% c("historical", 'rcp85'))
 
 system.time({
-  dap = dap_crop(catolog = maca_ex, 
+  dap = dap(catolog = maca_ex, 
                  AOI =  AOI::aoi_get(state = "NC"), 
-                 startDate = "2005-12-25", endDate = "2006-01-05") |> 
-    dap_get()
+                 startDate = "2005-12-25", endDate = "2006-01-05") 
 })
 
 

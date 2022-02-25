@@ -145,20 +145,20 @@
           startDate <span class="op">=</span> <span class="st">"2010-01-01"</span>, 
           endDate   <span class="op">=</span> <span class="st">"2010-01-31"</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>
-<span class="co">#&gt; source:        https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05.ncml </span>
+<span class="co">#&gt; source:   https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05... </span>
+<span class="co">#&gt; tiles:    2 XY_modis tiles</span>
 <span class="co">#&gt; varname(s):</span>
 <span class="co">#&gt;    &gt; PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))</span>
-<span class="co">#&gt;    &gt; PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; diminsions:  1336 - 1336, 240 - 1321, 5 (names: XDim,YDim,time)</span>
+<span class="co">#&gt; diminsions:  1336, 1561, 5 (names: XDim,YDim,time)</span>
 <span class="co">#&gt; resolution:  463.313, 463.313, 8 days</span>
-<span class="co">#&gt; extent:      -8404029.365, -7785506.889, 3336314.872, 3447046.611 (xmin, xmax, ymin, ymax) -8404029.365, -7785506.889, 2724278.773, 3335851.559 (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; extent:      -8404261.02, -7785275.23, 2724047.12, 3447278.27 (xmin, xmax, ymin, ymax)</span>
 <span class="co">#&gt; crs:         +proj=sinu +lon_0= +x_0= +y_0= +units=m +a=6371007...</span>
 <span class="co">#&gt; time:        2010-01-02 to 2010-02-03</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; values: 5,658,834,278,400 (vars*X*Y*T)</span>
+<span class="co">#&gt; values: 10,427,480 (vars*X*Y*T)</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   2.883   1.206  19.922</span></code></pre></div>
+<span class="co">#&gt;   2.871   0.965  11.864</span></code></pre></div>
 <p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 </div>
 <div class="section level2">
@@ -181,25 +181,24 @@
 <code class="sourceCode R"><span class="va">maca_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">tmp</span>,  <span class="va">scenario</span> <span class="op"><a href="https://rdrr.io/pkg/terra/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"historical"</span>, <span class="st">'rcp85'</span><span class="op">)</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
-  <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="../reference/dap_crop.html">dap_crop</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">maca_ex</span>, 
+  <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="../reference/dap.html">dap</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">maca_ex</span>, 
                  AOI <span class="op">=</span>  <span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"NC"</span><span class="op">)</span>, 
-                 startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2006-01-05"</span><span class="op">)</span> |&gt; 
-    <span class="fu"><a href="../reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="op">)</span>
+                 startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2006-01-05"</span><span class="op">)</span> 
 <span class="op">}</span><span class="op">)</span>
-<span class="co">#&gt; source:        http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_macav2metdata_huss_BNU-ESM_r1i1p1_historical_1950_2005_CONUS_daily.nc </span>
+<span class="co">#&gt; source:   http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg... </span>
+<span class="co">#&gt; tiles:    2 T tiles</span>
 <span class="co">#&gt; varname(s):</span>
 <span class="co">#&gt;    &gt; specific_humidity [kg kg-1] (Daily Mean Near-Surface Specific Humidity)</span>
-<span class="co">#&gt;    &gt; specific_humidity [kg kg-1] (Daily Mean Near-Surface Specific Humidity)</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; diminsions:  214, 67, 7 (names: lon,lat,time) 214, 67, 5 (names: lon,lat,time)</span>
+<span class="co">#&gt; diminsions:  214, 67, 12 (names: lon,lat,time)</span>
 <span class="co">#&gt; resolution:  0.042, 0.042, 1 days</span>
-<span class="co">#&gt; extent:      -84.314, -75.44, 33.855, 36.605 (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; extent:      -84.34, -75.42, 33.83, 36.63 (xmin, xmax, ymin, ymax)</span>
 <span class="co">#&gt; crs:         +proj=longlat +a=6378137 +f=0.00335281066474748 +p...</span>
-<span class="co">#&gt; time:        2005-12-25 to 2005-12-31</span>
+<span class="co">#&gt; time:        2005-12-25 to 2006-01-05</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; values: 200,732 143,380 (vars*X*Y*T)</span>
+<span class="co">#&gt; values: 172,056 (vars*X*Y*T)</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   0.106   0.040   1.659</span>
+<span class="co">#&gt;   0.111   0.038   1.691</span>
 
 
 <span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_historical</span>, <span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_rcp85</span><span class="op">)</span><span class="op">)</span></code></pre></div>

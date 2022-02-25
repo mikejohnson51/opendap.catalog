@@ -88,7 +88,7 @@ dap = dap(URL = file,
 plot(rast(dap))
 ```
 
-#### 2. A catalog of `r nrow(opendap.catalog::params)` web resources (as of `r format(Sys.Date(), format = "%m/%Y")`)
+#### 2. A catalog of `r formatC(nrow(opendap.catalog::params),big.mark = ",",digits = 0,format = "f")` web resources (as of `r format(Sys.Date(), format = "%m/%Y")`)
 
 ```{r}
 dplyr::glimpse(opendap.catalog::params)
@@ -106,8 +106,7 @@ read_json('https://mikejohnson51.github.io/opendap.catalog/cat_params.json',
 
 ```{r}
 # Find MODIS PET in Florida for January 2010
-(
-  dap = dap(
+dap = dap(
     catolog = dplyr::filter(params, 
                             id == 'MOD16A2.006', 
                             varname == 'PET_500m'),
@@ -115,7 +114,6 @@ read_json('https://mikejohnson51.github.io/opendap.catalog/cat_params.json',
     startDate = "2010-01-01",
     endDate   = "2010-01-31"
   )
-)
 ```
 
 ```{r, echo = FALSE}

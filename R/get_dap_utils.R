@@ -103,49 +103,44 @@ dap_summary = function(dap = NULL, url = NULL){
 if(!is.null(url) & is.null(dap)){
   dap = dap_crop(url)
 } else{
-  xy    = expand.grid(unique(dap$ncols), unique(dap$nrows))
-  cells = prod(xy[, 1] * xy[, 2])
-  xDim  = formatC(
-    paste0(xy[, 1], collapse = " - "),
-    big.mark = ",",
-    digits = 0,
-    format = "f"
-  )
-  yDim  = formatC(
-    paste0(xy[, 2], collapse = " - "),
-    big.mark = ",",
-    digits = 0,
-    format = "f"
-  )
-  tDim  = formatC(
-    unique(dap$Tdim),
-    big.mark = ",",
-    digits = 0,
-    format = "f"
-  )
+
+  resx <- (dap$Xn - dap$X1) / (dap$ncols-1)
+  resy <- (dap$Yn - dap$Y1) / (dap$nrows-1)
+
+  xmin <- min(dap$X1 - 0.5 * resx)
+  xmax <- max(dap$Xn + 0.5 * resx)
+  ymin <- min(dap$Y1 - 0.5 * resy)
+  ymax <- max(dap$Yn + 0.5 * resy)
+
+  ncol = round((xmax-xmin) / unique(resy))
+  nrow = round((ymax-ymin) / unique(resx))
+
   ext   = paste0(
-    round(unique(pmin(dap$X1, dap$Xn)), 3),
-    ", ",
-    round(unique(pmax(dap$X1, dap$Xn)), 3),
-    ", ",
-    round(unique(pmin(dap$Y1, dap$Yn)), 3),
-    ", ",
-    round(unique(pmax(dap$Y1, dap$Yn)), 3),
+    paste(round(c(xmin, xmax, ymin,ymax),2), collapse = ", "),
     " (xmin, xmax, ymin, ymax)"
   )
-  var   = paste0(dap$varname, " [", dap$units, "] (", dap$long_name, ")")
+
+  minDate = min(as.Date(dap$startDate))
+  maxDate = max(as.Date(dap$endDate))
+  tDim = length(seq.Date(minDate, maxDate, by = dap$interval[1]))
+
+  var   = unique(paste0(dap$varname, " [", dap$units, "] (", dap$long_name, ")"))
+
   a = dap$proj[1]
+  b = strsplit(dap$URL[1], "\\?")[[1]][1]
+  b = ifelse(nchar(b) > 60, paste0(strtrim(b, 60), '...'), b)
 
   {
-    cat("source:       ",    strsplit(dap$URL[1], "\\?")[[1]][1], "\n")
+    cat("source:\t",  b  , "\n")
+    if(max(table(dap$varname)) > 1){ cat("tiles:\t",  max(table(dap$varname)), unique(dap$tiled), "tiles\n") }
     cat("varname(s):\n  ", paste(">", var, collapse = "\n   "))
     cat(paste0("\n", paste(rep("=", 50), collapse = "")))
     cat(
       "\ndiminsions: ",
       paste0(
-        xDim,
+        round(ncol),
         ", ",
-        yDim,
+        round(nrow),
         ", ",
         tDim,
         " (names: ",
@@ -171,16 +166,16 @@ if(!is.null(url) & is.null(dap)){
     cat("\ncrs:        ", ifelse(nchar(a) > 50, paste0(strtrim(a, 50), '...'), a))
     cat(
       "\ntime:       ",
-      as.character(dap$startDate[1]),
+      as.character(minDate),
       'to',
-      as.character(dap$endDate[1])#,
+      as.character(maxDate)#,
       #paste0("(by: ", dap$interval[1], ")")
     )
     cat(paste0("\n", paste(rep("=", 50), collapse = "")))
     cat(
       "\nvalues:",
       formatC(
-        cells * as.numeric(tDim) * length(var),
+        nrow * ncol * tDim * length(var),
         big.mark = ",",
         digits = 0,
         format = "f"

@@ -58,7 +58,7 @@ In light of this, `opendap.catolog` provides three primary services.
 dap <- dap(URL = "https://cida.usgs.gov/thredds/dodsC/bcsd_obs", 
            AOI = AOI::aoi_get(state = "FL"), 
            startDate = "1995-01-01")
-#> source:        https://cida.usgs.gov/thredds/dodsC/bcsd_obs 
+#> source:   https://cida.usgs.gov/thredds/dodsC/bcsd_obs 
 #> varname(s):
 #>    > pr [mm/m] (monthly_sum_pr)
 #>    > prate [mm/d] (monthly_avg_prate)
@@ -69,7 +69,7 @@ dap <- dap(URL = "https://cida.usgs.gov/thredds/dodsC/bcsd_obs",
 #> ==================================================
 #> diminsions:  62, 48, 1 (names: longitude,latitude,time)
 #> resolution:  0.125, 0.125, 1 months
-#> extent:      -87.688, -80.062, 25.188, 31.062 (xmin, xmax, ymin, ymax)
+#> extent:      -87.75, -80, 25.12, 31.12 (xmin, xmax, ymin, ymax)
 #> crs:         +proj=longlat +a=6378137 +f=0.00335281066474748 +p...
 #> time:        1995-01-01 to 1995-01-01
 #> ==================================================
@@ -97,13 +97,13 @@ utils:::format.object_size(file.size(file), "auto")
 dap = dap(URL = file, 
           AOI = AOI::aoi_get(state = "FL"), 
           startDate = "2020-01-01", endDate = "2020-01-05")
-#> source:        /Users/mjohnson/Downloads/NEXGDM_srad_2020_v100.nc 
+#> source:   /Users/mjohnson/Downloads/NEXGDM_srad_2020_v100.nc 
 #> varname(s):
 #>    > srad [MJ/day] (Shortwave radiation)
 #> ==================================================
 #> diminsions:  807, 693, 4 (names: x,y,time)
 #> resolution:  1000, 1000, 1 days
-#> extent:      796455, 1602455, 268505, 960505 (xmin, xmax, ymin, ymax)
+#> extent:      795955, 1602955, 268005, 961005 (xmin, xmax, ymin, ymax)
 #> crs:         +proj=aea +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +u...
 #> time:        2020-01-02 to 2020-01-05
 #> ==================================================
@@ -112,7 +112,7 @@ dap = dap(URL = file,
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
-#### 2. A catalog of 14160 web resources (as of 02/2022)
+#### 2. A catalog of 14,160 web resources (as of 02/2022)
 
 ``` r
 dplyr::glimpse(opendap.catalog::params)
@@ -151,8 +151,7 @@ read_json('https://mikejohnson51.github.io/opendap.catalog/cat_params.json',
 
 ``` r
 # Find MODIS PET in Florida for January 2010
-(
-  dap = dap(
+dap = dap(
     catolog = dplyr::filter(params, 
                             id == 'MOD16A2.006', 
                             varname == 'PET_500m'),
@@ -160,29 +159,18 @@ read_json('https://mikejohnson51.github.io/opendap.catalog/cat_params.json',
     startDate = "2010-01-01",
     endDate   = "2010-01-31"
   )
-)
-#> source:        https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05.ncml 
+#> source:   https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05... 
+#> tiles:    2 XY_modis tiles
 #> varname(s):
 #>    > PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))
-#>    > PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))
 #> ==================================================
-#> diminsions:  1336 - 1336, 240 - 1321, 5 (names: XDim,YDim,time)
+#> diminsions:  1336, 1561, 5 (names: XDim,YDim,time)
 #> resolution:  463.313, 463.313, 8 days
-#> extent:      -8404029.365, -7785506.889, 3336314.872, 3447046.611 (xmin, xmax, ymin, ymax) -8404029.365, -7785506.889, 2724278.773, 3335851.559 (xmin, xmax, ymin, ymax)
+#> extent:      -8404261.02, -7785275.23, 2724047.12, 3447278.27 (xmin, xmax, ymin, ymax)
 #> crs:         +proj=sinu +lon_0= +x_0= +y_0= +units=m +a=6371007...
 #> time:        2010-01-02 to 2010-02-03
 #> ==================================================
-#> values: 5,658,834,278,400 (vars*X*Y*T)
-#> class       : SpatRaster 
-#> dimensions  : 1561, 1336, 5  (nrow, ncol, nlyr)
-#> resolution  : 463.3127, 463.3127  (x, y)
-#> extent      : -8404261, -7785275, 2724047, 3447278  (xmin, xmax, ymin, ymax)
-#> coord. ref. : +proj=sinu +lon_0=0 +x_0=0 +y_0=0 +R=6371007.181 +units=m +no_defs 
-#> source      : memory 
-#> names       :  2010-01-02,  2010-01-10,  2010-01-18,  2010-01-26,  2010-02-03 
-#> min values  :   10.300000,    7.200000,    9.900001,    9.900001,   11.100000 
-#> max values  :        34.4,        24.1,        35.9,        37.5,        44.4 
-#> unit        : kg/m^2/8day, kg/m^2/8day, kg/m^2/8day, kg/m^2/8day, kg/m^2/8day
+#> values: 10,427,480 (vars*X*Y*T)
 ```
 
 <img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
