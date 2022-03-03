@@ -67,13 +67,13 @@ dap <- dap(URL = "https://cida.usgs.gov/thredds/dodsC/bcsd_obs",
 #>    > tasmin [C] (monthly_avg_tasmin)
 #>    > wind [m/s] (monthly_avg_wind)
 #> ==================================================
-#> diminsions:  62, 48, 1 (names: longitude,latitude,time)
+#> diminsions:  63, 48, 1 (names: longitude,latitude,time)
 #> resolution:  0.125, 0.125, 1 months
-#> extent:      -87.75, -80, 25.12, 31.12 (xmin, xmax, ymin, ymax)
+#> extent:      -87.75, -79.88, 25.12, 31.12 (xmin, xmax, ymin, ymax)
 #> crs:         +proj=longlat +a=6378137 +f=0.00335281066474748 +p...
 #> time:        1995-01-01 to 1995-01-01
 #> ==================================================
-#> values: 17,856 (vars*X*Y*T)
+#> values: 18,144 (vars*X*Y*T)
 
 str(dap, max.level = 1)
 #> List of 6
@@ -101,18 +101,18 @@ dap = dap(URL = file,
 #> varname(s):
 #>    > srad [MJ/day] (Shortwave radiation)
 #> ==================================================
-#> diminsions:  807, 693, 4 (names: x,y,time)
+#> diminsions:  814, 710, 4 (names: x,y,time)
 #> resolution:  1000, 1000, 1 days
-#> extent:      795955, 1602955, 268005, 961005 (xmin, xmax, ymin, ymax)
+#> extent:      795955, 1609955, 252005, 962005 (xmin, xmax, ymin, ymax)
 #> crs:         +proj=aea +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +u...
 #> time:        2020-01-02 to 2020-01-05
 #> ==================================================
-#> values: 2,237,004 (vars*X*Y*T)
+#> values: 2,311,760 (vars*X*Y*T)
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
-#### 2. A catalog of 14,160 web resources (as of 02/2022)
+#### 2. A catalog of 14,160 web resources (as of 03/2022)
 
 ``` r
 dplyr::glimpse(opendap.catalog::params)
@@ -147,30 +147,78 @@ read_json('https://mikejohnson51.github.io/opendap.catalog/cat_params.json',
           simplifyVector = TRUE)
 ```
 
+With 14,160 web resources documented, there are simply too many
+resources to search through by hand unless you know exactly what you
+want. This voids the possibility of serendipitous discovery. So, we have
+added a generally fuzzy search tool to help discover datasets.
+
+Say you want to find what resoruces there are for monhtly snow water
+equivilent? `search` and `search_summary` can help:
+
+``` r
+search("monthly swe") 
+#> # A tibble: 11 × 16
+#>    id    grid.id URL       tiled variable varname long_name units model ensemble
+#>    <chr> <chr>   <chr>     <chr> <chr>    <chr>   <chr>     <chr> <chr> <chr>   
+#>  1 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  CLSM… <NA>    
+#>  2 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  CLSM… <NA>    
+#>  3 GLDAS 129     https://… ""    swe_inst swe_in… "** snow… <NA>  NOAH… <NA>    
+#>  4 GLDAS 129     https://… ""    swe_inst swe_in… "** snow… <NA>  NOAH… <NA>    
+#>  5 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  NOAH… <NA>    
+#>  6 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  NOAH… <NA>    
+#>  7 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  VIC10 <NA>    
+#>  8 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  VIC10 <NA>    
+#>  9 NLDAS 166     https://… ""    swe      swe     "snow wa… kg m… MOS0… <NA>    
+#> 10 NLDAS 166     https://… ""    swe      swe     "snow wa… kg m… NOAH… <NA>    
+#> 11 NLDAS 166     https://… ""    swe      swe     "snow wa… kg m… VIC0… <NA>    
+#> # … with 6 more variables: scenario <chr>, T_name <chr>, duration <chr>,
+#> #   interval <chr>, nT <int>, rank <dbl>
+```
+
+We could also search for daily precipitation in MACA for scenario RCP45
+and summarize the results:
+
+``` r
+search("daily precipitation maca rcp45") |> 
+  search_summary()
+#>         id     long_name      variable count
+#> 1 maca_day Precipitation precipitation    20
+```
+
+Overall we see there are 20 model/ensemeble members that produced MACA
+daily rainfall.
+
 ### (3) The ability to pass catalog elements to the generalized toolsets:
 
 ``` r
 # Find MODIS PET in Florida for January 2010
+
+search("MOD16A2.006 PET")
+#> # A tibble: 1 × 16
+#>   id         grid.id URL   tiled variable varname long_name units model ensemble
+#>   <chr>      <chr>   <chr> <chr> <chr>    <chr>   <chr>     <chr> <chr> <chr>   
+#> 1 MOD16A2.0… XY_mod… http… XY_m… <NA>     PET_50… MODIS Gr… kg/m… <NA>  <NA>    
+#> # … with 6 more variables: scenario <chr>, T_name <chr>, duration <chr>,
+#> #   interval <chr>, nT <int>, rank <dbl>
+
 dap = dap(
-    catolog = dplyr::filter(params, 
-                            id == 'MOD16A2.006', 
-                            varname == 'PET_500m'),
+    catolog = search("MOD16A2.006 PET"),
     AOI = AOI::aoi_get(state = "FL"),
     startDate = "2010-01-01",
     endDate   = "2010-01-31"
   )
 #> source:   https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05... 
-#> tiles:    2 XY_modis tiles
+#> tiles:    4 XY_modis tiles
 #> varname(s):
 #>    > PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))
 #> ==================================================
-#> diminsions:  1336, 1561, 5 (names: XDim,YDim,time)
+#> diminsions:  1383, 1586, 5 (names: XDim,YDim,time) 1383, 1586, 5 (names: XDim,YDim,time)
 #> resolution:  463.313, 463.313, 8 days
-#> extent:      -8404261.02, -7785275.23, 2724047.12, 3447278.27 (xmin, xmax, ymin, ymax)
+#> extent:      -8417233.78, -7776472.29, 2712464.3, 3447278.27 (xmin, xmax, ymin, ymax)
 #> crs:         +proj=sinu +lon_0= +x_0= +y_0= +units=m +a=6371007...
 #> time:        2010-01-02 to 2010-02-03
 #> ==================================================
-#> values: 10,427,480 (vars*X*Y*T)
+#> values: 10,967,190 10,967,190 (vars*X*Y*T)
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />

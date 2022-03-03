@@ -59,7 +59,10 @@
       <a href="../articles/catalog.html">OPeDAP catalog</a>
     </li>
     <li>
-      <a href="../articles/xyt_aggregation.html">XYT aggrrgations</a>
+      <a href="../articles/xyt_aggregation.html">XYT aggregations</a>
+    </li>
+    <li>
+      <a href="../articles/search.html">Catalog Search</a>
     </li>
     <li>
       <a href="../articles/future.html">Going Parallel</a>
@@ -139,13 +142,13 @@
 <span class="co">#&gt; $ endDate     <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span> 2011-01-01, 2011-01-01, 2011-01-01, 2011-01-01, 2011-01-0…</span>
 <span class="co">#&gt; $ X_name      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "lon", "lon", "lon", "lon", "lon", "lon", "lon", "lon", "l…</span>
 <span class="co">#&gt; $ Y_name      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "lat", "lat", "lat", "lat", "lat", "lat", "lat", "lat", "l…</span>
-<span class="co">#&gt; $ X1          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> -96.60595, -96.60595, -96.60595, -96.60595, -96.60595, -96…</span>
+<span class="co">#&gt; $ X1          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> -96.64761, -96.64761, -96.64761, -96.64761, -96.64761, -96…</span>
 <span class="co">#&gt; $ Xn          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> -90.14772, -90.14772, -90.14772, -90.14772, -90.14772, -90…</span>
 <span class="co">#&gt; $ Y1          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 40.39617, 40.39617, 40.39617, 40.39617, 40.39617, 40.39617…</span>
 <span class="co">#&gt; $ Yn          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 43.52112, 43.52112, 43.52112, 43.52112, 43.52112, 43.52112…</span>
 <span class="co">#&gt; $ resX        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.04166599, 0.04166599, 0.04166599, 0.04166599, 0.04166599…</span>
 <span class="co">#&gt; $ resY        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.041666, 0.041666, 0.041666, 0.041666, 0.041666, 0.041666…</span>
-<span class="co">#&gt; $ ncols       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156…</span>
+<span class="co">#&gt; $ ncols       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157…</span>
 <span class="co">#&gt; $ nrows       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76…</span>
 <span class="co">#&gt; $ proj        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no…</span>
 <span class="co">#&gt; $ toptobottom <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…</span>
@@ -155,7 +158,7 @@
  <span class="va">sequential</span> <span class="op">=</span> <span class="fu"><a href="../reference/dap_get.html">dap_get</a></span><span class="op">(</span>dap <span class="op">=</span> <span class="va">cropped</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   0.062   0.032   0.898</span></code></pre></div>
+<span class="co">#&gt;   0.053   0.029   0.884</span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://future.futureverse.org" class="external-link">future</a></span><span class="op">)</span>
 <span class="fu"><a href="https://future.futureverse.org/reference/plan.html" class="external-link">plan</a></span><span class="op">(</span><span class="va">multisession</span>, workers <span class="op">=</span> <span class="fl">7</span><span class="op">)</span>
@@ -164,7 +167,7 @@
   <span class="va">ms</span> <span class="op">=</span> <span class="fu"><a href="../reference/dap_get.html">dap_get</a></span><span class="op">(</span><span class="va">cropped</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   3.550   0.674  29.612</span></code></pre></div>
+<span class="co">#&gt;   3.249   0.635  31.840</span></code></pre></div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

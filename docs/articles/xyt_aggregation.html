@@ -59,7 +59,10 @@
       <a href="../articles/catalog.html">OPeDAP catalog</a>
     </li>
     <li>
-      <a href="../articles/xyt_aggregation.html">XYT aggrrgations</a>
+      <a href="../articles/xyt_aggregation.html">XYT aggregations</a>
+    </li>
+    <li>
+      <a href="../articles/search.html">Catalog Search</a>
     </li>
     <li>
       <a href="../articles/future.html">Going Parallel</a>
@@ -146,19 +149,19 @@
           endDate   <span class="op">=</span> <span class="st">"2010-01-31"</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>
 <span class="co">#&gt; source:   https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05... </span>
-<span class="co">#&gt; tiles:    2 XY_modis tiles</span>
+<span class="co">#&gt; tiles:    4 XY_modis tiles</span>
 <span class="co">#&gt; varname(s):</span>
 <span class="co">#&gt;    &gt; PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; diminsions:  1336, 1561, 5 (names: XDim,YDim,time)</span>
+<span class="co">#&gt; diminsions:  1383, 1586, 5 (names: XDim,YDim,time) 1383, 1586, 5 (names: XDim,YDim,time)</span>
 <span class="co">#&gt; resolution:  463.313, 463.313, 8 days</span>
-<span class="co">#&gt; extent:      -8404261.02, -7785275.23, 2724047.12, 3447278.27 (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; extent:      -8417233.78, -7776472.29, 2712464.3, 3447278.27 (xmin, xmax, ymin, ymax)</span>
 <span class="co">#&gt; crs:         +proj=sinu +lon_0= +x_0= +y_0= +units=m +a=6371007...</span>
 <span class="co">#&gt; time:        2010-01-02 to 2010-02-03</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; values: 10,427,480 (vars*X*Y*T)</span>
+<span class="co">#&gt; values: 10,967,190 10,967,190 (vars*X*Y*T)</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   2.871   0.965  11.864</span></code></pre></div>
+<span class="co">#&gt;   3.331   0.975  12.313</span></code></pre></div>
 <p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 </div>
 <div class="section level2">
@@ -190,15 +193,15 @@
 <span class="co">#&gt; varname(s):</span>
 <span class="co">#&gt;    &gt; specific_humidity [kg kg-1] (Daily Mean Near-Surface Specific Humidity)</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; diminsions:  214, 67, 12 (names: lon,lat,time)</span>
+<span class="co">#&gt; diminsions:  215, 69, 12 (names: lon,lat,time)</span>
 <span class="co">#&gt; resolution:  0.042, 0.042, 1 days</span>
-<span class="co">#&gt; extent:      -84.34, -75.42, 33.83, 36.63 (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; extent:      -84.34, -75.38, 33.75, 36.63 (xmin, xmax, ymin, ymax)</span>
 <span class="co">#&gt; crs:         +proj=longlat +a=6378137 +f=0.00335281066474748 +p...</span>
 <span class="co">#&gt; time:        2005-12-25 to 2006-01-05</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; values: 172,056 (vars*X*Y*T)</span>
+<span class="co">#&gt; values: 178,020 (vars*X*Y*T)</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   0.111   0.038   1.691</span>
+<span class="co">#&gt;   0.097   0.040   2.086</span>
 
 
 <span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_historical</span>, <span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_rcp85</span><span class="op">)</span><span class="op">)</span></code></pre></div>

@@ -101,15 +101,30 @@ read_json('https://mikejohnson51.github.io/opendap.catalog/cat_params.json',
           simplifyVector = TRUE)
 ```
 
+With  `r formatC(nrow(opendap.catalog::params),big.mark = ",",digits = 0,format = "f")` web resources documented, there are simply too many resources to search through by hand unless you know exactly what you want. This  voids the possibility of serendipitous discovery. So, we have added a generally fuzzy search tool to help discover datasets.
+
+Say you want to find what resoruces there are for monhtly snow water equivilent? `search` and `search_summary` can help: 
+
+```{r}
+search("monthly swe") 
+```
+We could also search for daily precipitation in MACA for scenario RCP45 and summarize the results: 
+ 
+```{r}
+search("daily precipitation maca rcp45") |> 
+  search_summary()
+```
+Overall we see there are 20 model/ensemeble members that produced MACA daily rainfall.
 
 ### (3) The ability to pass catalog elements to the generalized toolsets:
 
 ```{r}
 # Find MODIS PET in Florida for January 2010
+
+search("MOD16A2.006 PET")
+
 dap = dap(
-    catolog = dplyr::filter(params, 
-                            id == 'MOD16A2.006', 
-                            varname == 'PET_500m'),
+    catolog = search("MOD16A2.006 PET"),
     AOI = AOI::aoi_get(state = "FL"),
     startDate = "2010-01-01",
     endDate   = "2010-01-31"

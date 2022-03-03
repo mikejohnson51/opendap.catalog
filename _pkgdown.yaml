@@ -28,8 +28,10 @@ navbar:
       href: articles/dap_utils.html
     - text: OPeDAP catalog
       href: articles/catalog.html
-    - text: XYT aggrrgations
+    - text: XYT aggregations
       href: articles/xyt_aggregation.html
+    - text: Catalog Search
+      href: articles/search.html
     - text: Going Parallel
       href: articles/future.html
     - text: Parameter Estimation

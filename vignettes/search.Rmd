@@ -1,0 +1,91 @@
+---
+title: "Catalog Search"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Catalog Search}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  error = FALSE,
+  message = FALSE
+)
+```
+
+```{r setup}
+library(opendap.catalog)
+library(terra)
+```
+
+As of `r format(Sys.Date(), format = "%m/%Y")`, there are `r formatC(nrow(opendap.catalog::params),big.mark = ",",digits = 0,format = "f")` web resources documented in the catalog. 
+
+This offers too many resources to search through by hand unless you know exactly what you want which voids the possibility of serendipitous discovery. So, we have added a generally fuzzy search tool to help discover datasets.
+
+### Search
+
+Say we want to find what snow water equivalent data (SWE) is available for a research problem. We can search the catalog on that key word:
+
+```{r}
+(swe = search("swe"))
+```
+In total there are `r nrow(swe)` resources available across `r length(unique(swe$id))` data sets. Viewing even a reduced catalog can still be onerous so a search summary is provided.
+
+### Search Summary
+
+`search_summary` can be applied to any catalog object, but is meant for those reduced with `search`. It groups resources by ID and varname in order to consolidate the number of resources that are generated from many model/ensemeble/scenario runs (e.g. count)
+
+```{r}
+search("swe") |> 
+  search_summary()
+```
+
+This shows us more clearly the data sets and variables available. Importantly, `count` references number of variable data sets within each id/variable pair.
+
+### Mulit term search
+
+Say looking through the returned results that we know NLDAS produces SWE measures we can expand the search to look for 'NLDAS swe', or 'swe NLDAS'.
+
+```{r}
+search("swe NLDAS") 
+```
+The result is that we see NLDAS has three models (VIC, NOAH, and MOSAIC) as well as two time horizons (M and H). We can continue to narrow from there!
+
+### Puting it all together
+
+Say we want monthly SWE for 2018 along the Rocky Mountain corridor. We found NLDAS to be a good source and want to look at how the models compare in January:  
+
+```{r}
+swe = dap(catolog = search("month swe NLDAS"),
+          AOI = AOI::aoi_get(state = c("CO", "UT", "ID", "MT", "WY")), 
+          startDate = "2018-01-01")
+```
+
+```{r, echo = FALSE}
+terra::plot(terra::rast(swe), main = c("NLDAS_MOS0125_M.2.0", 
+                                       "NLDAS_NOAH0125_M.2.0", 
+                                       "NLDAS_VIC0125_M.2.0"))
+```
+
+```{r}
+plot(mean(rast(swe)), main = "Ensemble Jan 2018 NLDAS SWE")
+```
+
+Alternatively, say you wanted one year of monthly data from just the VIC model. All you would need to do is refine your search: 
+
+```{r}
+swe = dap(catolog = search("month swe NLDAS VIC"),
+          AOI = AOI::aoi_get(state = c("CO", "UT", "ID", "MT", "WY")), 
+          startDate = "2018-01-01",
+          endDate = "2018-12-31")
+```
+
+```{r, echo = FALSE}
+terra::plot(swe[[1]][[1:12]])
+```
+
+

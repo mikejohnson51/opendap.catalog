@@ -25,6 +25,9 @@
     <loc>/articles/parameter_estimation.html</loc>
   </url>
   <url>
+    <loc>/articles/search.html</loc>
+  </url>
+  <url>
     <loc>/articles/xyt_aggregation.html</loc>
   </url>
   <url>
@@ -59,6 +62,9 @@
   </url>
   <url>
     <loc>/reference/dap_xyzv.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dot-query.html</loc>
   </url>
   <url>
     <loc>/reference/dot-resource_grid.html</loc>
@@ -98,6 +104,12 @@
   </url>
   <url>
     <loc>/reference/read_tds.html</loc>
+  </url>
+  <url>
+    <loc>/reference/search.html</loc>
+  </url>
+  <url>
+    <loc>/reference/search_summary.html</loc>
   </url>
   <url>
     <loc>/reference/time_meta.html</loc>

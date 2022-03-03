@@ -11,7 +11,8 @@ Imports:
     future.apply,
     ncmeta,
     RNetCDF,
-    terra
+    terra,
+    utils
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
