@@ -40,7 +40,7 @@ glimpse(cropped)
 
 ```{r, eval=T}
 system.time({
- sequential = dap_get(dap = cropped[1,])
+ sequential = dap_get(dap = cropped)
 })
 ```
 
