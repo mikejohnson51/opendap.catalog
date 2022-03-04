@@ -3,14 +3,15 @@
 #' @return data.frame
 #' @export
 
-search_summary <- function(x){
-
-  res <- by(x,list(x$id, x$varname), function(i)
-    c(id        = unique(i$id),
+search_summary <- function(x) {
+  res <- by(x, list(x$id, x$varname), function(i) {
+    c(
+      id = unique(i$id),
       long_name = unique(i$long_name),
-      variable  = unique(i$varname),
-      count     = nrow(i))
-  )
+      variable = unique(i$varname),
+      count = nrow(i)
+    )
+  })
 
   data.frame(do.call(rbind, res))
 }
@@ -23,17 +24,18 @@ search_summary <- function(x){
 #' @return data.frame
 #' @export
 
-search <- function(query = NULL, source = NULL){
+query = "maca daily huss pr bnu-esm"
 
-  if(!is.null(source)){
-    x = opendap.catalog::params[opendap.catalog::params$id == source, ]
+search <- function(query = NULL, source = NULL) {
+  if (!is.null(source)) {
+    x <- opendap.catalog::params[opendap.catalog::params$id == source, ]
   } else {
-    x = opendap.catalog::params
+    x <- opendap.catalog::params
   }
 
-  subs = x[, !names(x) %in% c('grid.id','URL', 'tiled', 'units', 'T_name', 'nT', 'duration')]
+  subs <- x[, !names(x) %in% c("grid.id", "URL", "tiled", "units", "T_name", "nT", "duration")]
 
-  if(!is.null(query)){
+  if (!is.null(query)) {
     .query(x, query, subs)
   } else {
     x
@@ -48,36 +50,37 @@ search <- function(query = NULL, source = NULL){
 #' @export
 #' @importFrom utils adist
 
-.query <- function(x,query, subs = NULL){
+.query <- function(x, query, subs = NULL) {
+  query <- gsub("daily", "day", query)
+  query <- gsub("monthly", "month", query)
+  query <- gsub("hourly", "hour", query)
 
-   query = gsub("daily", "day", query)
-   query = gsub("monthly", "month", query)
-   query = gsub("hourly", "hour", query)
+  if (is.null(subs)) {
+    subs <- x
+  }
 
-   if(is.null(subs)){ subs = x }
+  splits <- split(subs, seq(nrow(x)))
 
-   splits  <- split(subs, seq(nrow(x)))
-
-   q = strsplit(query, " ")[[1]]
+  q <- strsplit(query, " ")[[1]]
 
   indices <- unlist(lapply(splits, function(y) {
-    m = adist(q,
-              y,
-              ignore.case = TRUE,
-              partial     = TRUE
-        )
+    m <- adist(q,
+      y,
+      ignore.case = TRUE,
+      partial     = TRUE
+    )
+
 
     sum(apply(m, 1, min, na.rm = TRUE))
   }))
 
-  x$rank = indices
+  x$rank <- indices
 
-  if(min(indices) > length(q) * 3 ){
+  if (min(indices) > length(q) * 3) {
     warning("No likely matches found.")
   }
 
-  x = x[x$rank ==  min(indices),]
+  x <- x[x$rank == min(indices), ]
 
-  x[order(x$rank),]
+  x[order(x$rank), ]
 }
-

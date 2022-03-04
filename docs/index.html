@@ -231,15 +231,6 @@
 </h3>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Find MODIS PET in Florida for January 2010</span>
-
-<span class="fu"><a href="reference/search.html">search</a></span><span class="op">(</span><span class="st">"MOD16A2.006 PET"</span><span class="op">)</span>
-<span class="co">#&gt; # A tibble: 1 × 16</span>
-<span class="co">#&gt;   id         grid.id URL   tiled variable varname long_name units model ensemble</span>
-<span class="co">#&gt;   &lt;chr&gt;      &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   </span>
-<span class="co">#&gt; 1 MOD16A2.0… XY_mod… http… XY_m… &lt;NA&gt;     PET_50… MODIS Gr… kg/m… &lt;NA&gt;  &lt;NA&gt;    </span>
-<span class="co">#&gt; # … with 6 more variables: scenario &lt;chr&gt;, T_name &lt;chr&gt;, duration &lt;chr&gt;,</span>
-<span class="co">#&gt; #   interval &lt;chr&gt;, nT &lt;int&gt;, rank &lt;dbl&gt;</span>
-
 <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="reference/dap.html">dap</a></span><span class="op">(</span>
     catolog <span class="op">=</span> <span class="fu"><a href="reference/search.html">search</a></span><span class="op">(</span><span class="st">"MOD16A2.006 PET"</span><span class="op">)</span>,
     AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>,
@@ -247,17 +238,17 @@
     endDate   <span class="op">=</span> <span class="st">"2010-01-31"</span>
   <span class="op">)</span>
 <span class="co">#&gt; source:   https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05... </span>
-<span class="co">#&gt; tiles:    4 XY_modis tiles</span>
+<span class="co">#&gt; tiles:    3 XY_modis tiles</span>
 <span class="co">#&gt; varname(s):</span>
 <span class="co">#&gt;    &gt; PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; diminsions:  1383, 1586, 5 (names: XDim,YDim,time) 1383, 1586, 5 (names: XDim,YDim,time)</span>
+<span class="co">#&gt; diminsions:  1383, 1586, 5 (names: XDim,YDim,time)</span>
 <span class="co">#&gt; resolution:  463.313, 463.313, 8 days</span>
 <span class="co">#&gt; extent:      -8417233.78, -7776472.29, 2712464.3, 3447278.27 (xmin, xmax, ymin, ymax)</span>
 <span class="co">#&gt; crs:         +proj=sinu +lon_0= +x_0= +y_0= +units=m +a=6371007...</span>
 <span class="co">#&gt; time:        2010-01-02 to 2010-02-03</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; values: 10,967,190 10,967,190 (vars*X*Y*T)</span></code></pre></div>
+<span class="co">#&gt; values: 10,967,190 (vars*X*Y*T)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-11-1.png" width="100%"></p>
 </div>
 

@@ -10,10 +10,68 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE,
+  error   = FALSE
 )
 ```
 
 ```{r setup}
 library(opendap.catalog)
+library(zonal)
 ```
+
+
+```{r}
+(cat = search('terraclim')[1:6,])
+```
+
+```{r}
+AOI = AOI::aoi_get(state = "TX", county = "all")
+plot(AOI$geometry)
+```
+
+```{r}
+system.time({
+  dap <- dap(
+    catolog = cat,
+    AOI = AOI,
+    startDate = "2005-01-01" )
+})
+```
+
+```{r}
+system.time({
+  multi_var = execute_zonal(file = dap, AOI, "fip_code")
+})
+```
+
+```{r}
+plot(multi_var[grepl(paste(names(dap), collapse = "|"), names(multi_var))],
+     border = NA)
+```
+
+## Through time
+
+```{r}
+system.time({
+  (dap <- dap(
+    catolog = cat[4,],
+    AOI = AOI,
+    startDate = "2005-01-01",
+    endDate   = "2005-12-01"
+  ))
+})
+```
+
+
+```{r}
+system.time({
+  time_ex = execute_zonal(file = dap, AOI, "fip_code")
+})
+```
+
+```{r}
+plot(time_ex[grepl(paste(names(dap), collapse = "|"), names(time_ex))],
+     border = NA)

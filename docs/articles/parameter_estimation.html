@@ -105,16 +105,102 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mikejohnson51/opendap.catalog" class="external-link">opendap.catalog</a></span><span class="op">)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Attaching package: 'opendap.catalog'</span>
-<span class="co">#&gt; The following object is masked from 'package:base':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     search</span></code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">zonal</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="op">(</span><span class="va">cat</span> <span class="op">=</span> <span class="fu"><a href="../reference/search.html">search</a></span><span class="op">(</span><span class="st">'terraclim'</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>,<span class="op">]</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 16</span></span>
+<span class="co">#&gt;   id        grid.id URL    tiled variable varname long_name units model ensemble</span>
+<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> terraclim 110     http:… <span style="color: #949494;">""</span>    aet      aet     water_ev… mm    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> terraclim 110     http:… <span style="color: #949494;">""</span>    def      def     water_po… mm    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> terraclim 110     http:… <span style="color: #949494;">""</span>    PDSI     PDSI    palmer_d… unit… <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span> terraclim 110     http:… <span style="color: #949494;">""</span>    pet      pet     water_po… mm    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span> terraclim 110     http:… <span style="color: #949494;">""</span>    ppt      ppt     precipit… mm    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span> terraclim 110     http:… <span style="color: #949494;">""</span>    q        q       runoff_a… mm    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      </span>
+<span class="co">#&gt; <span style="color: #949494;"># … with 6 more variables: scenario &lt;chr&gt;, T_name &lt;chr&gt;, duration &lt;chr&gt;,</span></span>
+<span class="co">#&gt; <span style="color: #949494;">#   interval &lt;chr&gt;, nT &lt;int&gt;, rank &lt;dbl&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">AOI</span> <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"TX"</span>, county <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">AOI</span><span class="op">$</span><span class="va">geometry</span><span class="op">)</span></code></pre></div>
+<p><img src="parameter_estimation_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
+  <span class="va">dap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dap.html">dap</a></span><span class="op">(</span>
+    catolog <span class="op">=</span> <span class="va">cat</span>,
+    AOI <span class="op">=</span> <span class="va">AOI</span>,
+    startDate <span class="op">=</span> <span class="st">"2005-01-01"</span> <span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="co">#&gt; source:   http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg... </span>
+<span class="co">#&gt; varname(s):</span>
+<span class="co">#&gt;    &gt; aet [mm] (water_evaporation_amount)</span>
+<span class="co">#&gt;    &gt; def [mm] (water_potential_evaporation_amount_minus_water_evaporation_amount)</span>
+<span class="co">#&gt;    &gt; PDSI [unitless] (palmer_drought_severity_index)</span>
+<span class="co">#&gt;    &gt; pet [mm] (water_potential_evaporation_amount)</span>
+<span class="co">#&gt;    &gt; ppt [mm] (precipitation_amount)</span>
+<span class="co">#&gt;    &gt; q [mm] (runoff_amount)</span>
+<span class="co">#&gt; ==================================================</span>
+<span class="co">#&gt; diminsions:  316, 257, 1 (names: lon,lat,time)</span>
+<span class="co">#&gt; resolution:  0.042, 0.042, 1 months</span>
+<span class="co">#&gt; extent:      -106.67, -93.5, 25.83, 36.54 (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; crs:         +proj=longlat +a=6378137 +f=0.00335281066474748 +p...</span>
+<span class="co">#&gt; time:        2005-01-01 to 2005-01-01</span>
+<span class="co">#&gt; ==================================================</span>
+<span class="co">#&gt; values: 487,272 (vars*X*Y*T)</span>
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.999   0.131   6.294</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
+  <span class="va">multi_var</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/zonal/man/execute_zonal.html" class="external-link">execute_zonal</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">dap</span>, <span class="va">AOI</span>, <span class="st">"fip_code"</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.873   0.021   0.897</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">multi_var</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">multi_var</span><span class="op">)</span><span class="op">)</span><span class="op">]</span>,
+     border <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></code></pre></div>
+<p><img src="parameter_estimation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+<div class="section level2">
+<h2 id="through-time">Through time<a class="anchor" aria-label="anchor" href="#through-time"></a>
+</h2>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
+  <span class="op">(</span><span class="va">dap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dap.html">dap</a></span><span class="op">(</span>
+    catolog <span class="op">=</span> <span class="va">cat</span><span class="op">[</span><span class="fl">4</span>,<span class="op">]</span>,
+    AOI <span class="op">=</span> <span class="va">AOI</span>,
+    startDate <span class="op">=</span> <span class="st">"2005-01-01"</span>,
+    endDate   <span class="op">=</span> <span class="st">"2005-12-01"</span>
+  <span class="op">)</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="co">#&gt; source:   http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg... </span>
+<span class="co">#&gt; varname(s):</span>
+<span class="co">#&gt;    &gt; pet [mm] (water_potential_evaporation_amount)</span>
+<span class="co">#&gt; ==================================================</span>
+<span class="co">#&gt; diminsions:  316, 257, 12 (names: lon,lat,time)</span>
+<span class="co">#&gt; resolution:  0.042, 0.042, 1 months</span>
+<span class="co">#&gt; extent:      -106.67, -93.5, 25.83, 36.54 (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; crs:         +proj=longlat +a=6378137 +f=0.00335281066474748 +p...</span>
+<span class="co">#&gt; time:        2005-01-01 to 2005-12-01</span>
+<span class="co">#&gt; ==================================================</span>
+<span class="co">#&gt; values: 974,544 (vars*X*Y*T)</span>
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.862   0.044   2.556</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
+  <span class="va">time_ex</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/zonal/man/execute_zonal.html" class="external-link">execute_zonal</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">dap</span>, <span class="va">AOI</span>, <span class="st">"fip_code"</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   1.079   0.020   1.105</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">time_ex</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dap</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">time_ex</span><span class="op">)</span><span class="op">)</span><span class="op">]</span>,
+     border <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></code></pre></div>
+<p><img src="parameter_estimation_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 

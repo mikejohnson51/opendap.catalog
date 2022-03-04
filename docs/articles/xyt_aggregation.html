@@ -107,91 +107,105 @@
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mikejohnson51/opendap.catalog" class="external-link">opendap.catalog</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/terra/" class="external-link">terra</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></code></pre></div>
+<p>One challenge that opendap catalogs have for end users is that they are often dissagregated by space and/or time. While this structure may (or may not) make sense from the data storage/service side, it is a burden on people who want the data.</p>
+<p>Here we look at two data sets MODIS and MACA. The first is dissagregated across space (XY) while the second across time (T).</p>
 <div class="section level2">
 <h2 id="xy-aggregates">XY Aggregates<a class="anchor" aria-label="anchor" href="#xy-aggregates"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">mod</span>   <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">grids</span>, <span class="va">grid.id</span> <span class="op">==</span> <span class="st">"XY_modis"</span><span class="op">)</span>
-<span class="va">bboxs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span> <span class="fu"><a href="../reference/make_vect.html">make_vect</a></span><span class="op">(</span><span class="va">mod</span><span class="op">[</span><span class="va">x</span>,<span class="op">]</span><span class="op">)</span><span class="op">}</span><span class="op">)</span><span class="op">)</span>
-
-<span class="va">AOI_vect</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/project.html" class="external-link">project</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"conus"</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crs.html" class="external-link">crs</a></span><span class="op">(</span><span class="va">bboxs</span><span class="op">)</span><span class="op">)</span>
-
-<span class="op">{</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bboxs</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">AOI_vect</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">}</span></code></pre></div>
+<p>Within MODIS there are 460 non-fill tiles with an approximate 10 degree by 10 degree size at the equator. The public (and keyless) MODIS OpenDAP server stores each tile - aggregated through time - as a single resource.</p>
 <p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
-<p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
+<p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-3-1.png" width="700"> In cases where the AOI (like the state of Florida) crosses mutiple tiles, the multiple resources must be identified, subset and then stitched together! This XY aggregations is one of the perks avaialble with <code><a href="../reference/dap.html">dap()</a></code>.</p>
+<div class="section level4">
+<h4 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+</h4>
+<p>Lets find a dataset of interest:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="op">(</span><span class="va">modis_ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search.html">search</a></span><span class="op">(</span><span class="st">"MOD16A2.006 PET"</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 16</span></span>
+<span class="co">#&gt;   id         grid.id URL   tiled variable varname long_name units model ensemble</span>
+<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> MOD16A2.0… XY_mod… http… XY_m… <span style="color: #BB0000;">NA</span>       PET_50… MODIS Gr… kg/m… <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      </span>
+<span class="co">#&gt; <span style="color: #949494;"># … with 6 more variables: scenario &lt;chr&gt;, T_name &lt;chr&gt;, duration &lt;chr&gt;,</span></span>
+<span class="co">#&gt; <span style="color: #949494;">#   interval &lt;chr&gt;, nT &lt;int&gt;, rank &lt;dbl&gt;</span></span></code></pre></div>
+<p>And then query that dataset for a spatial and temporal slice:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">modis_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, <span class="va">id</span> <span class="op">==</span> <span class="st">'MOD16A2.006'</span>, <span class="va">varname</span> <span class="op">==</span> <span class="st">'PET_500m'</span><span class="op">)</span>
-
-<span class="fu"><a href="https://dplyr.tidyverse.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">modis_ex</span><span class="op">)</span>
-<span class="co">#&gt; Rows: 1</span>
-<span class="co">#&gt; Columns: 15</span>
-<span class="co">#&gt; $ id        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "MOD16A2.006"</span>
-<span class="co">#&gt; $ grid.id   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "XY_modis"</span>
-<span class="co">#&gt; $ URL       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006"</span>
-<span class="co">#&gt; $ tiled     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "XY_modis"</span>
-<span class="co">#&gt; $ variable  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA</span>
-<span class="co">#&gt; $ varname   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "PET_500m"</span>
-<span class="co">#&gt; $ long_name <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "MODIS Gridded 500m 8-day Composite potential Evapotranspira…</span>
-<span class="co">#&gt; $ units     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "kg/m^2/8day"</span>
-<span class="co">#&gt; $ model     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA</span>
-<span class="co">#&gt; $ ensemble  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA</span>
-<span class="co">#&gt; $ scenario  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA</span>
-<span class="co">#&gt; $ T_name    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "time"</span>
-<span class="co">#&gt; $ duration  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "2001-01-01/2022-02-02"</span>
-<span class="co">#&gt; $ interval  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "8 days"</span>
-<span class="co">#&gt; $ nT        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 970</span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
-<span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="../reference/dap.html">dap</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">modis_ex</span>, 
-          AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>, 
-          startDate <span class="op">=</span> <span class="st">"2010-01-01"</span>, 
-          endDate   <span class="op">=</span> <span class="st">"2010-01-31"</span><span class="op">)</span>
+  <span class="va">dap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dap.html">dap</a></span><span class="op">(</span>
+    catolog <span class="op">=</span> <span class="va">modis_ex</span>,
+    AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"FL"</span><span class="op">)</span>,
+    startDate <span class="op">=</span> <span class="st">"2020-01-01"</span>,
+    endDate <span class="op">=</span> <span class="st">"2020-01-31"</span>
+  <span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>
 <span class="co">#&gt; source:   https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05... </span>
-<span class="co">#&gt; tiles:    4 XY_modis tiles</span>
+<span class="co">#&gt; tiles:    3 XY_modis tiles</span>
 <span class="co">#&gt; varname(s):</span>
 <span class="co">#&gt;    &gt; PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; diminsions:  1383, 1586, 5 (names: XDim,YDim,time) 1383, 1586, 5 (names: XDim,YDim,time)</span>
+<span class="co">#&gt; diminsions:  1383, 1586, 5 (names: XDim,YDim,time)</span>
 <span class="co">#&gt; resolution:  463.313, 463.313, 8 days</span>
 <span class="co">#&gt; extent:      -8417233.78, -7776472.29, 2712464.3, 3447278.27 (xmin, xmax, ymin, ymax)</span>
 <span class="co">#&gt; crs:         +proj=sinu +lon_0= +x_0= +y_0= +units=m +a=6371007...</span>
-<span class="co">#&gt; time:        2010-01-02 to 2010-02-03</span>
+<span class="co">#&gt; time:        2019-12-29 to 2020-01-30</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; values: 10,967,190 10,967,190 (vars*X*Y*T)</span>
+<span class="co">#&gt; values: 10,967,190 (vars*X*Y*T)</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   3.106   0.931  12.766</span></code></pre></div>
+<span class="co">#&gt;   2.825   0.813  10.658</span></code></pre></div>
+<p>Note that the returned object is a single <code>SpatRaster</code> layer for each time period, but in the summary we see this is the result of compositing 3 unique tiles (e.g. resources).</p>
 <p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="t-aggregates">T Aggregates<a class="anchor" aria-label="anchor" href="#t-aggregates"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">tmp</span> <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">params</span>, 
-              <span class="va">id</span> <span class="op">==</span> <span class="st">"maca_day"</span>, 
-              <span class="va">variable</span> <span class="op">==</span> <span class="st">"huss"</span>,
-              <span class="va">model</span> <span class="op">==</span> <span class="st">"BNU-ESM"</span><span class="op">)</span>
+<p>Some data sets also tile by time period. Often this occurs when there is a historic period and multiple periods of future forecasts using different climate scenarios.</p>
+<p>An example of this is the MACA dataset. Say we want daily specific humidity and rainfall from the MACA down scaling of the BNU-ESM model.</p>
+<p>First we need to find the catalog elements:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="../reference/search.html">search</a></span><span class="op">(</span><span class="st">"maca daily huss bnu-esm"</span><span class="op">)</span>,
+             <span class="fu"><a href="../reference/search.html">search</a></span><span class="op">(</span><span class="st">"maca daily pr bnu-esm"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">tmp</span>, <span class="va">id</span>, <span class="va">variable</span>, <span class="va">model</span>, <span class="va">scenario</span>, <span class="va">duration</span><span class="op">)</span><span class="op">)</span>
-<span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 5</span></span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span>
 <span class="co">#&gt;   id       variable model   scenario   duration             </span>
 <span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span>
 <span class="co">#&gt; <span style="color: #BCBCBC;">1</span> maca_day huss     BNU-ESM historical 1950-01-01/2005-12-31</span>
 <span class="co">#&gt; <span style="color: #BCBCBC;">2</span> maca_day huss     BNU-ESM rcp45      2006-01-01/2099-12-31</span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> maca_day huss     BNU-ESM rcp85      2006-01-01/2099-12-31</span></code></pre></div>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> maca_day huss     BNU-ESM rcp85      2006-01-01/2099-12-31</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span> maca_day pr       BNU-ESM historical 1950-01-01/2005-12-31</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span> maca_day pr       BNU-ESM rcp45      2006-01-01/2099-12-31</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span> maca_day pr       BNU-ESM rcp85      2006-01-01/2099-12-31</span></code></pre></div>
+<p>Here we see that the data set is split at “2006-01-01” into a historic, and multi scenario future. For out example lets chose the historic and rcp85 future:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="op">(</span><span class="va">maca_ex</span> <span class="op">&lt;-</span> <span class="va">tmp</span><span class="op">[</span><span class="va">tmp</span><span class="op">$</span><span class="va">scenario</span> <span class="op"><a href="https://rdrr.io/pkg/terra/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"historical"</span>, <span class="st">"rcp85"</span><span class="op">)</span>, <span class="op">]</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 16</span></span>
+<span class="co">#&gt;   id       grid.id URL     tiled variable varname long_name units model ensemble</span>
+<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> maca_day 167     http:/… T     huss     specif… Daily Me… kg k… BNU-… r1i1p1  </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> maca_day 167     http:/… T     huss     specif… Daily Me… kg k… BNU-… r1i1p1  </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> maca_day 167     http:/… T     pr       precip… Precipit… mm    BNU-… r1i1p1  </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span> maca_day 167     http:/… T     pr       precip… Precipit… mm    BNU-… r1i1p1  </span>
+<span class="co">#&gt; <span style="color: #949494;"># … with 6 more variables: scenario &lt;chr&gt;, T_name &lt;chr&gt;, duration &lt;chr&gt;,</span></span>
+<span class="co">#&gt; <span style="color: #949494;">#   interval &lt;chr&gt;, nT &lt;int&gt;, rank &lt;dbl&gt;</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="example-1">Example<a class="anchor" aria-label="anchor" href="#example-1"></a>
+</h2>
+<p>Once defined</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">maca_ex</span> <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">tmp</span>,  <span class="va">scenario</span> <span class="op"><a href="https://rdrr.io/pkg/terra/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"historical"</span>, <span class="st">'rcp85'</span><span class="op">)</span><span class="op">)</span>
-
-<span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
-  <span class="va">dap</span> <span class="op">=</span> <span class="fu"><a href="../reference/dap.html">dap</a></span><span class="op">(</span>catolog <span class="op">=</span> <span class="va">maca_ex</span>, 
-                 AOI <span class="op">=</span>  <span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"NC"</span><span class="op">)</span>, 
-                 startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, endDate <span class="op">=</span> <span class="st">"2006-01-05"</span><span class="op">)</span> 
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
+ <span class="op">(</span><span class="va">dap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dap.html">dap</a></span><span class="op">(</span>
+    catolog <span class="op">=</span> <span class="va">maca_ex</span>,
+    AOI <span class="op">=</span> <span class="fu">AOI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AOI/man/aoi_get.html" class="external-link">aoi_get</a></span><span class="op">(</span>state <span class="op">=</span> <span class="st">"NC"</span><span class="op">)</span>,
+    startDate <span class="op">=</span> <span class="st">"2005-12-25"</span>, 
+    endDate   <span class="op">=</span> <span class="st">"2006-01-05"</span>
+  <span class="op">)</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>
 <span class="co">#&gt; source:   http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg... </span>
 <span class="co">#&gt; tiles:    2 T tiles</span>
 <span class="co">#&gt; varname(s):</span>
 <span class="co">#&gt;    &gt; specific_humidity [kg kg-1] (Daily Mean Near-Surface Specific Humidity)</span>
+<span class="co">#&gt;    &gt; precipitation [mm] (Precipitation)</span>
 <span class="co">#&gt; ==================================================</span>
 <span class="co">#&gt; diminsions:  215, 69, 12 (names: lon,lat,time)</span>
 <span class="co">#&gt; resolution:  0.042, 0.042, 1 days</span>
@@ -199,13 +213,40 @@
 <span class="co">#&gt; crs:         +proj=longlat +a=6378137 +f=0.00335281066474748 +p...</span>
 <span class="co">#&gt; time:        2005-12-25 to 2006-01-05</span>
 <span class="co">#&gt; ==================================================</span>
-<span class="co">#&gt; values: 178,020 (vars*X*Y*T)</span>
+<span class="co">#&gt; values: 356,040 (vars*X*Y*T)</span>
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   0.105   0.050   2.119</span>
+<span class="co">#&gt;   0.190   0.072   6.115</span>
 
-
-<span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_historical</span>, <span class="va">dap</span><span class="op">$</span><span class="va">specific_humidity_rcp85</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
+<span class="va">dap</span>
+<span class="co">#&gt; $specific_humidity</span>
+<span class="co">#&gt; class       : SpatRaster </span>
+<span class="co">#&gt; dimensions  : 69, 215, 12  (nrow, ncol, nlyr)</span>
+<span class="co">#&gt; resolution  : 0.04166599, 0.041666  (x, y)</span>
+<span class="co">#&gt; extent      : -84.33531, -75.37712, 33.75044, 36.62539  (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; coord. ref. : +proj=longlat +ellps=WGS84 +no_defs </span>
+<span class="co">#&gt; sources     : memory  (7 layers) </span>
+<span class="co">#&gt;               memory  (5 layers) </span>
+<span class="co">#&gt; names       :  2005-~rical,  2005-~rical,  2005-~rical,  2005-~rical,  2005-~rical,  2005-~rical, ... </span>
+<span class="co">#&gt; min values  : 0.0009929931, 0.0020145120, 0.0029251990, 0.0050238664, 0.0035579144, 0.0020626856, ... </span>
+<span class="co">#&gt; max values  :  0.003929262,  0.006220981,  0.007751799,  0.009064749,  0.008505707,  0.004949129, ... </span>
+<span class="co">#&gt; unit        :      kg kg-1,      kg kg-1,      kg kg-1,      kg kg-1,      kg kg-1,      kg kg-1, ... </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $precipitation</span>
+<span class="co">#&gt; class       : SpatRaster </span>
+<span class="co">#&gt; dimensions  : 69, 215, 12  (nrow, ncol, nlyr)</span>
+<span class="co">#&gt; resolution  : 0.04166599, 0.041666  (x, y)</span>
+<span class="co">#&gt; extent      : -84.33531, -75.37712, 33.75044, 36.62539  (xmin, xmax, ymin, ymax)</span>
+<span class="co">#&gt; coord. ref. : +proj=longlat +ellps=WGS84 +no_defs </span>
+<span class="co">#&gt; sources     : memory  (7 layers) </span>
+<span class="co">#&gt;               memory  (5 layers) </span>
+<span class="co">#&gt; names       : 2005-~rical, 2005-~rical, 2005-~rical, 2005-~rical, 2005-~rical, 2005-~rical, ... </span>
+<span class="co">#&gt; min values  :   0.0000000,   0.0000000,   0.0000000,   7.0845313,   0.0000000,   0.0000000, ... </span>
+<span class="co">#&gt; max values  :   9.2031107,  11.6709108,  29.1529446,  36.3147240,   9.7074308,   2.3503284, ... </span>
+<span class="co">#&gt; unit        :          mm,          mm,          mm,          mm,          mm,          mm, ...</span></code></pre></div>
+<p>Finally lets look at the mean of each variable over this period:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">dap</span>, <span class="va">mean</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="xyt_aggregation_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
 </div>
   </div>
 

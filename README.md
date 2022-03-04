@@ -192,15 +192,6 @@ daily rainfall.
 
 ``` r
 # Find MODIS PET in Florida for January 2010
-
-search("MOD16A2.006 PET")
-#> # A tibble: 1 × 16
-#>   id         grid.id URL   tiled variable varname long_name units model ensemble
-#>   <chr>      <chr>   <chr> <chr> <chr>    <chr>   <chr>     <chr> <chr> <chr>   
-#> 1 MOD16A2.0… XY_mod… http… XY_m… <NA>     PET_50… MODIS Gr… kg/m… <NA>  <NA>    
-#> # … with 6 more variables: scenario <chr>, T_name <chr>, duration <chr>,
-#> #   interval <chr>, nT <int>, rank <dbl>
-
 dap = dap(
     catolog = search("MOD16A2.006 PET"),
     AOI = AOI::aoi_get(state = "FL"),
@@ -208,17 +199,17 @@ dap = dap(
     endDate   = "2010-01-31"
   )
 #> source:   https://opendap.cr.usgs.gov/opendap/hyrax/MOD16A2.006/h10v05... 
-#> tiles:    4 XY_modis tiles
+#> tiles:    3 XY_modis tiles
 #> varname(s):
 #>    > PET_500m [kg/m^2/8day] (MODIS Gridded 500m 8-day Composite potential Evapotranspiration (ET))
 #> ==================================================
-#> diminsions:  1383, 1586, 5 (names: XDim,YDim,time) 1383, 1586, 5 (names: XDim,YDim,time)
+#> diminsions:  1383, 1586, 5 (names: XDim,YDim,time)
 #> resolution:  463.313, 463.313, 8 days
 #> extent:      -8417233.78, -7776472.29, 2712464.3, 3447278.27 (xmin, xmax, ymin, ymax)
 #> crs:         +proj=sinu +lon_0= +x_0= +y_0= +units=m +a=6371007...
 #> time:        2010-01-02 to 2010-02-03
 #> ==================================================
-#> values: 10,967,190 10,967,190 (vars*X*Y*T)
+#> values: 10,967,190 (vars*X*Y*T)
 ```
 
 <img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />

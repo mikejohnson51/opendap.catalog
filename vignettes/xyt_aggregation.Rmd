@@ -22,40 +22,63 @@ library(terra)
 library(dplyr)
 ```
 
+One challenge that opendap catalogs have for end users is that they are often dissagregated by space and/or time. While this structure may (or may not) make sense from the data storage/service side, it is a burden on people who want the data.
+
+Here we look at two data sets MODIS and MACA. The first is dissagregated across space (XY) while the second across time (T). 
+
 # XY Aggregates
 
-```{r}
-mod   = filter(grids, grid.id == "XY_modis")
-bboxs = vect(sapply(1:nrow(mod), function(x){ make_vect(mod[x,])}))
+Within MODIS there are 460 non-fill tiles with an approximate 10 degree by 10 degree size at the equator. The public (and keyless) MODIS OpenDAP server stores each tile - aggregated through time - as a single resource. 
 
-AOI_vect = project(vect(AOI::aoi_get(state = "conus")), crs(bboxs))
+```{r, echo = FALSE}
+mod <- grids[grids$grid.id == "XY_modis", ]
 
-{plot(bboxs)
-plot(AOI_vect, add = TRUE)}
+bboxs <- vect(sapply(1:nrow(mod), function(x) {
+  make_vect(mod[x, ])
+}))
+
+AOI_vect <- project(vect(AOI::aoi_get(state = "conus", union = TRUE)), crs(bboxs))
+bbox_int = terra::relate(bboxs, AOI_vect, "intersects")
+
+{
+  plot(bboxs[bbox_int[, 1], ], main = "15 tiles over CONUS" )
+  plot(AOI_vect, add = TRUE)
+}
 ```
 
 ```{r, echo = FALSE}
-AOI_vect_fl = AOI_vect[AOI_vect$state_abbr == "FL",]
-bbox_int = terra::relate(bboxs, AOI_vect_fl, "intersects")
+AOI_vect_fl <- project(vect(AOI::aoi_get(state = "FL", union = TRUE)), crs(bboxs))
+bbox_int <- terra::relate(bboxs, AOI_vect_fl, "intersects")
 
-
-{plot(bboxs[bbox_int[,1], ])
-plot(AOI_vect_fl, add = TRUE)}
+{
+  plot(bboxs[bbox_int[, 1], ], main = "3 tiles over Florida")
+  plot(AOI_vect_fl, add = TRUE)
+}
 ```
+In cases where the AOI (like the state of Florida) crosses mutiple tiles, the multiple resources must be identified, subset and then stitched together! This XY aggregations is one of the perks avaialble with `dap()`.
+
+### Example 
+
+Lets find a dataset of interest:
+
 ```{r}
-modis_ex = filter(params, id == 'MOD16A2.006', varname == 'PET_500m')
-
-glimpse(modis_ex)
+(modis_ex <- search("MOD16A2.006 PET"))
 ```
+
+And then query that dataset for a spatial and temporal slice:
 
 ```{r, eval = T}
 system.time({
-dap = dap(catolog = modis_ex, 
-          AOI = AOI::aoi_get(state = "FL"), 
-          startDate = "2010-01-01", 
-          endDate   = "2010-01-31")
+  dap <- dap(
+    catolog = modis_ex,
+    AOI = AOI::aoi_get(state = "FL"),
+    startDate = "2020-01-01",
+    endDate = "2020-01-31"
+  )
 })
 ```
+
+Note that the returned object is a single `SpatRaster` layer for each time period, but in the summary we see this is the result of compositing 3 unique tiles (e.g. resources).
 
 ```{r, echo = FALSE, eval = T}
 plot(dap)
@@ -63,26 +86,44 @@ plot(dap)
 
 # T Aggregates
 
+Some data sets also tile by time period. Often this occurs when there is a historic period and multiple periods of future forecasts using different climate scenarios. 
+
+An example of this is the MACA dataset. Say we want daily specific humidity and rainfall from the MACA down scaling of the BNU-ESM model.
+
+First we need to find the catalog elements:
+
 ```{r, eval = T}
-tmp = dplyr::filter(params, 
-              id == "maca_day", 
-              variable == "huss",
-              model == "BNU-ESM")
+tmp <- rbind(search("maca daily huss bnu-esm"),
+             search("maca daily pr bnu-esm"))
 
 (select(tmp, id, variable, model, scenario, duration))
 ```
 
+Here we see that the data set is split at "2006-01-01" into a historic, and multi scenario future. For out example lets chose the historic and rcp85 future:
 
 ```{r}
-maca_ex = filter(tmp,  scenario %in% c("historical", 'rcp85'))
+(maca_ex <- tmp[tmp$scenario %in% c("historical", "rcp85"), ])
+```
 
+# Example
+
+Once defined
+
+```{r}
 system.time({
-  dap = dap(catolog = maca_ex, 
-                 AOI =  AOI::aoi_get(state = "NC"), 
-                 startDate = "2005-12-25", endDate = "2006-01-05") 
+ (dap <- dap(
+    catolog = maca_ex,
+    AOI = AOI::aoi_get(state = "NC"),
+    startDate = "2005-12-25", 
+    endDate   = "2006-01-05"
+  ))
 })
 
+dap
+```
 
-plot(c(dap$specific_humidity_historical, dap$specific_humidity_rcp85))
+Finally lets look at the mean of each variable over this period:
 
+```{r}
+plot(rast(lapply(dap, mean)))
 ```

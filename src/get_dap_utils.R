@@ -271,19 +271,7 @@ dap_crop = function(URL       = NULL,
 
     AOIspat = terra::vect(AOI)
 
-     if(catolog$id[1] != 'local'){
-        grids = opendap.catalog::grids
-        grids = grids[grids$grid.id %in% catolog$grid.id, ]
-
-        if(length(unique(grids$proj)) > 1){
-          bol = sapply(1:nrow(grids), function(x){  terra::relate(terra::ext(terra::project(AOIspat, grids$proj[x])), make_ext(grids[x,]), "intersects")[1,1]})
-        } else {
-          tmp_aoi = terra::project(AOIspat, grids$proj[1])
-          bol = sapply(1:nrow(grids), function(x){  terra::relate(terra::ext(tmp_aoi), make_ext(grids[x,]), "intersects")[1,1]})
-        }
-
-        catolog = merge(catolog, grids[bol, ])
-     }
+    if(catolog$id[1] != 'local'){ spatial_intersect(catolog, AOI, merge = TRUE) }
 
     out = lapply(1:nrow(catolog), function(i){
       tryCatch({

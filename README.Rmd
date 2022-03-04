@@ -120,9 +120,6 @@ Overall we see there are 20 model/ensemeble members that produced MACA daily rai
 
 ```{r}
 # Find MODIS PET in Florida for January 2010
-
-search("MOD16A2.006 PET")
-
 dap = dap(
     catolog = search("MOD16A2.006 PET"),
     AOI = AOI::aoi_get(state = "FL"),
