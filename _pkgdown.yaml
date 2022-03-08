@@ -36,3 +36,5 @@ navbar:
       href: articles/future.html
     - text: Parameter Estimation
       href: articles/parameter_estimation.html
+    - text: USGS VRTs (next steps)
+      href: articles/usgs_vrts.html
