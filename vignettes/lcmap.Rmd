@@ -1,0 +1,209 @@
+---
+title: "LCMAP Examples"
+author: "Mike Johnson"
+date: "3/8/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning = FALSE, 
+                      error = FALSE, 
+                      message = FALSE)
+
+source("../private/aws.R")
+library(terra)
+```
+
+# General Notes
+
+We are looking for efficient, remote-access to LCMAP (and NLCD) data that is not reliant on a service like WCS or REST APIs.
+
+The goal is to be able to access each file at a single non-authenticated end point, and that each file is easily discoverable (either online or via a catalog). The semi-new VSI capabilities in GDAL offer a way to achieve this using the existing LCMAP resources, however they are not stored effiecently for this purpose given they are zipped.
+
+The aim is to show what is possible with what is currently available and - hopefully - provide rationale for a minimally-invasive step towards more efficient data access.
+
+# Use Case
+
+Say we want 2020 land cover data for a county in Colorado (Larimer). We will use this as a respective AOI.
+
+```{r}
+AOI <- AOI::aoi_get(state = "CO", county = "Larimer")
+```
+
+This county is ~6,825 sqkm with a bounding box area of ~8,700 sqkm. This is approximetly 10,600,000 LCMAP 30 meter cells.
+
+```{r, echo = FALSE}
+co <- AOI::aoi_get(state = c("CO"))
+{
+  plot(co$geometry)
+  plot(AOI$geometry, add = TRUE, col = "red")
+}
+```
+
+# Examples
+
+### VSI over zipped resources
+
+We _can_ backdoor into the existing resources using a fairly complex request that requires knowing the location of the zipped directory and the included file names.
+
+These _could_ be cataloged...
+
+```{r}
+system.time({
+  r <- rast("/vsizip/{/vsicurl/https://edcintl.cr.usgs.gov/downloads/sciweb1/shared/lcmap/public/full_extent_downloads/version_12/primary-landcover_conus_year_data/LCMAP_CU_2020_V12_LCPRI.zip}/LCMAP_CU_2020_V12_LCPRI.tif")
+  r2 <- crop(r, project(vect(AOI), crs(r)))
+})
+```
+
+```{r, echo = FALSE}
+plot(r2)
+```
+
+While this _does_ meet the conditions outlined above it is fairly slow...
+
+### s3 VSI
+
+As an alternative, I downloaded, unzipped, and moved the data to a s3 bucket (not public sorry). Here we can use a much simplier vsi call.
+
+```{r}
+system.time({
+  r <- rast("/vsis3/formulations-dev/spatial-grids/LCMAP_CU_2020_V12_LCPRI.tif")
+  r2 <- crop(r, project(vect(AOI), crs(r)))
+})
+```
+
+
+Overall this approach takes ~2% of the time needed to extracted data from the zipped version.
+
+### Is a VRT better?
+
+We have been working to show the advantages of VRT formats with the [National Map Data](https://mikejohnson51.github.io/opendap.catalog/articles/usgs_vrts.html). Since LCMAP is not tiled I do not expect improvements working over the VRT, but, we can check:
+
+```{r}
+system.time({
+  r <- rast("/vsis3/formulations-dev/spatial-grids/LCMAP_CU_2020_V12_LCPRI.vrt")
+  r2 <- crop(r, project(vect(AOI), crs(r)))
+})
+```
+
+### COG
+
+It is not clear if the tif files provided by LCMAP are COGs (the xml file suggests they are?). Either way, we also convert the LCMAP TIF to a uncompressed COG for completeness, 
+This creates a _large_ file - blew up from 1.2 GB to 22GB w/o compression. This might prove prohibitive for the LCMAP team given there are 35 years * 10 varibable (~7,700 GB!!)
+
+I added this file to the same s3 bucket and we can time access to it:
+
+```{r, eval = FALSE, echo = FALSE}
+system("gdal_translate /Users/mjohnson/Downloads/LCMAP_CU_2020_V12_LCPRI/LCMAP_CU_2020_V12_LCPRI.tif /Users/mjohnson/Downloads/LCMAP_CU_2020_V12_LCPRI/LCMAP_CU_2020_V12_LCPRI_cog.tif -of COG")
+```
+
+```{r}
+system.time({
+  r <- rast("/vsis3/formulations-dev/LCMAP_CU_2020_V12_LCPRI_cog.tif")
+  r2 <- crop(r, project(vect(AOI), crs(r)))
+})
+```
+
+### CLI, Python and more...
+
+So far we have shown access uisng r-spatial tools, however any language that has a GDAL binding can be used...
+
+```{r}
+sf::write_sf(AOI, "aoi.gpkg")
+
+system.time({
+  system("gdalwarp -cutline aoi.gpkg -crop_to_cutline /vsis3/formulations-dev/spatial-grids/LCMAP_CU_2020_V12_LCPRI.vrt aoi.tif")
+})
+```
+
+
+```{r, echo = FALSE}
+plot(rast("aoi.tif"))
+
+# Unlink
+unlink("aoi.tif")
+unlink("aoi.gpkg")
+```
+
+
+# End objective
+
+So why is this needed? Here we provide two basic use cases that support USGS, NOAA and community goals.
+
+### Zonal Stats
+
+One of objectives we are trying to achieve with improved LCMAP access is the ability to rapidly generate summary attribute descriptors over large sets of spatial units.
+
+The "pseudo" AOI in this example is all NHD catchments in Larimer county - we can get this with `nhdplusTools`:
+
+```{r}
+nhd <- nhdplusTools::get_nhdplus(AOI = AOI, realization = "catchment")
+```
+
+In total this provides us with `r nrow(nhd)` catchments, covering the `r ncell(r2)` LCMAP cells. To compute these, we can utilize the `zonal` toolset:
+
+```{r}
+system.time({
+  sum = zonal::execute_zonal(r2, nhd, FUN = "freq", ID = 'featureid')
+})
+
+plot(sum[sum$value == 4, 'percentage'], main = "Percentage LC 4")
+plot(sum[sum$value == 2, 'percentage'], main = "Percentage LC 2")
+```
+
+**This can also be done straight from web resources!**
+
+Here is a complete remote access summary of LCMAP landcover over NextGEN CAMELS basin. It is in this type of access that the key points outlines in the introduction become critical:
+
+```{r}
+system.time({
+  sum = zonal::execute_zonal("/vsis3/formulations-dev/spatial-grids/LCMAP_CU_2020_V12_LCPRI.vrt", 
+                             sf::read_sf('/vsis3/formulations-dev/CAMELS20/camels_01047000_3321976/spatial/hydrofabric.gpkg', "catchments"), 
+                             FUN = "freq", 
+                             ID = 'ID')
+})
+
+plot(sum[sum$value == 4, 'percentage'], main = "Percentage LC 4")
+plot(sum[sum$value == 2, 'percentage'], main = "Percentage LC 2")
+```
+
+### Hetergenous Data Access via standard endpoints:
+
+Say we want a collection of data for an area: 
+
+  - clay %
+  - land cover 
+  - elevation
+
+We can access this data from s3, HTTPS, and from Lynker, Github and Duke. The principles outlined above can help us get there. And while this "solves" out needs I would want the data to remain at the authoritative sources and not redistributed by us:
+
+```{r}
+files <- c(
+  "/vsis3/formulations-dev/spatial-grids/LCMAP_CU_2020_V12_LCPRI.vrt",
+  "/vsicurl/http://mikejohnson51.github.io/opendap.catalog/ned_1_tester.vrt",
+  "/vsicurl/http://hydrology.cee.duke.edu/POLARIS/PROPERTIES/v1.0/vrt/clay_mean_0_5.vrt"
+)
+
+
+o <- lapply(1:length(files), function(x) {
+  r <- rast(files[x])
+  crop(r, project(vect(AOI), crs(r)))
+})
+
+```
+
+
+```{r, echo = FALSE}
+plot(o[[1]], main = "LCMAP")
+plot(o[[2]], main = "NED 1")
+plot(o[[3]], main = "Clay %")
+```
+
+# Ask of LCMAP Team?
+
+Is there an already existing access point to the unzipped files? If not might it be considered?
+
+If not, is there any oppisition to us hosting - and - advertising access to unzipped s3 resources in this way via the NOAA NextGen project?
+
+Thanks!

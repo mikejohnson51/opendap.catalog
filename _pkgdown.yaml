@@ -38,3 +38,5 @@ navbar:
       href: articles/parameter_estimation.html
     - text: USGS VRTs (next steps)
       href: articles/usgs_vrts.html
+    - text: USGS LCMAP
+      href: articles/lcmap.html
