@@ -2,7 +2,7 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
 
-[![Dependencies](https://img.shields.io/badge/dependencies-9/37-orange?style=flat)](#)
+[![Dependencies](https://img.shields.io/badge/dependencies-5/26-orange?style=flat)](#)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit/)
 [![Website
@@ -156,44 +156,62 @@ Say you want to find what resoruces there are for monhtly snow water
 equivilent? `search` and `search_summary` can help:
 
 ``` r
-search("monthly swe") 
-#> # A tibble: 11 × 16
-#>    id    grid.id URL       tiled variable varname long_name units model ensemble
-#>    <chr> <chr>   <chr>     <chr> <chr>    <chr>   <chr>     <chr> <chr> <chr>   
-#>  1 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  CLSM… <NA>    
-#>  2 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  CLSM… <NA>    
-#>  3 GLDAS 129     https://… ""    swe_inst swe_in… "** snow… <NA>  NOAH… <NA>    
-#>  4 GLDAS 129     https://… ""    swe_inst swe_in… "** snow… <NA>  NOAH… <NA>    
-#>  5 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  NOAH… <NA>    
-#>  6 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  NOAH… <NA>    
-#>  7 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  VIC10 <NA>    
-#>  8 GLDAS 133     https://… ""    swe_inst swe_in… "** snow… <NA>  VIC10 <NA>    
-#>  9 NLDAS 166     https://… ""    swe      swe     "snow wa… kg m… MOS0… <NA>    
-#> 10 NLDAS 166     https://… ""    swe      swe     "snow wa… kg m… NOAH… <NA>    
-#> 11 NLDAS 166     https://… ""    swe      swe     "snow wa… kg m… VIC0… <NA>    
-#> # … with 6 more variables: scenario <chr>, T_name <chr>, duration <chr>,
-#> #   interval <chr>, nT <int>, rank <dbl>
+search("monthly swe")[,c("id", "model", "varname", "interval" )]
+#> # A tibble: 11 × 4
+#>    id    model    varname  interval
+#>    <chr> <chr>    <chr>    <chr>   
+#>  1 GLDAS CLSM10   swe_inst 1 months
+#>  2 GLDAS CLSM10   swe_inst 1 months
+#>  3 GLDAS NOAH025  swe_inst 1 months
+#>  4 GLDAS NOAH025  swe_inst 1 months
+#>  5 GLDAS NOAH10   swe_inst 1 months
+#>  6 GLDAS NOAH10   swe_inst 1 months
+#>  7 GLDAS VIC10    swe_inst 1 months
+#>  8 GLDAS VIC10    swe_inst 1 months
+#>  9 NLDAS MOS0125  swe      1 months
+#> 10 NLDAS NOAH0125 swe      1 months
+#> 11 NLDAS VIC0125  swe      1 months
 ```
-
-We could also search for daily precipitation in MACA for scenario RCP45
-and summarize the results:
 
 ``` r
-search("daily precipitation maca rcp45") |> 
+search("daily precipitation maca") |> 
   search_summary()
 #>         id     long_name      variable count
-#> 1 maca_day Precipitation precipitation    20
+#> 1 maca_day Precipitation precipitation    60
 ```
 
-Overall we see there are 20 model/ensemeble members that produced MACA
-daily rainfall.
+### Search
+
+Say we want to find what snow water equivalent data (SWE) is available
+for a research problem. We can search the catalog on that key word:
+
+``` r
+(swe = search("swe"))
+#> # A tibble: 188 × 16
+#>    id       grid.id URL    tiled variable varname long_name units model ensemble
+#>    <chr>    <chr>   <chr>  <chr> <chr>    <chr>   <chr>     <chr> <chr> <chr>   
+#>  1 bcsd_vic 170     https… ""    swe      <NA>    <NA>      mm    acce… r1i1p1  
+#>  2 bcsd_vic 170     https… ""    swe      <NA>    <NA>      mm    acce… r1i1p1  
+#>  3 bcsd_vic 170     https… ""    swe      <NA>    <NA>      mm    bcc-… r1i1p1  
+#>  4 bcsd_vic 170     https… ""    swe      <NA>    <NA>      mm    bcc-… r1i1p1  
+#>  5 bcsd_vic 170     https… ""    swe      <NA>    <NA>      mm    bcc-… r1i1p1  
+#>  6 bcsd_vic 170     https… ""    swe      <NA>    <NA>      mm    bcc-… r1i1p1  
+#>  7 bcsd_vic 170     https… ""    swe      <NA>    <NA>      mm    bcc-… r1i1p1  
+#>  8 bcsd_vic 170     https… ""    swe      <NA>    <NA>      mm    bcc-… r1i1p1  
+#>  9 bcsd_vic 170     https… ""    swe      <NA>    <NA>      mm    cane… r1i1p1  
+#> 10 bcsd_vic 170     https… ""    swe      <NA>    <NA>      mm    cane… r1i1p1  
+#> # … with 178 more rows, and 6 more variables: scenario <chr>, T_name <chr>,
+#> #   duration <chr>, interval <chr>, nT <int>, rank <dbl>
+```
 
 ### (3) The ability to pass catalog elements to the generalized toolsets:
 
 ``` r
 # Find MODIS PET in Florida for January 2010
 dap = dap(
-    catolog = search("MOD16A2.006 PET"),
+    catolog = dplyr::filter(params, 
+                            id == 'MOD16A2.006', 
+                            varname == 'PET_500m'),
     AOI = AOI::aoi_get(state = "FL"),
     startDate = "2010-01-01",
     endDate   = "2010-01-31"
@@ -212,4 +230,4 @@ dap = dap(
 #> values: 10,967,190 (vars*X*Y*T)
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />

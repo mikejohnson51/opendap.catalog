@@ -41,7 +41,11 @@ weighting_grid <- function(file, AOI, ID) {
 #' @importFrom exactextractr exact_extract
 #' @importFrom data.table rbindlist
 
-materilize_grid = function (file = NULL, ext = NULL, diminsion = NULL, projection = NULL) {
+materilize_grid = function (file = NULL,
+                            ext = NULL,
+                            diminsion = NULL,
+                            projection = NULL,
+                            fillValue = NULL) {
   if (!is.null(file)) {
     r = suppressWarnings({ terra::rast(file) })
 
@@ -61,6 +65,14 @@ materilize_grid = function (file = NULL, ext = NULL, diminsion = NULL, projectio
     }
 }
 
-  terra::rast(ext, nrows = diminsion[2], ncols = diminsion[1], crs = projection)
+  r = terra::rast(ext,
+                  nrows = diminsion[2],
+                  ncols = diminsion[1],
+                  crs = projection)
 
+  if(!is.null(fillValue)){
+    r[] = 0
+  }
+
+  r
 }

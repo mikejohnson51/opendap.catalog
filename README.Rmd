@@ -20,7 +20,7 @@ library(terra)
 
 
 <!-- badges: start -->
-[![Dependencies](https://img.shields.io/badge/dependencies-9/37-orange?style=flat)](#)
+[![Dependencies](https://img.shields.io/badge/dependencies-5/26-orange?style=flat)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit/)
 [![Website deployment](https://github.com/mikejohnson51/opendap.catalog/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/mikejohnson51/opendap.catalog/actions/workflows/pkgdown.yaml)
 [![LifeCycle](man/figures/lifecycle/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -106,22 +106,31 @@ With  `r formatC(nrow(opendap.catalog::params),big.mark = ",",digits = 0,format 
 Say you want to find what resoruces there are for monhtly snow water equivilent? `search` and `search_summary` can help: 
 
 ```{r}
-search("monthly swe") 
+search("monthly swe")[,c("id", "model", "varname", "interval" )]
 ```
-We could also search for daily precipitation in MACA for scenario RCP45 and summarize the results: 
- 
+
 ```{r}
-search("daily precipitation maca rcp45") |> 
+search("daily precipitation maca") |> 
   search_summary()
 ```
-Overall we see there are 20 model/ensemeble members that produced MACA daily rainfall.
+
+### Search
+
+Say we want to find what snow water equivalent data (SWE) is available for a research problem. We can search the catalog on that key word:
+
+```{r}
+(swe = search("swe"))
+```
+
 
 ### (3) The ability to pass catalog elements to the generalized toolsets:
 
 ```{r}
 # Find MODIS PET in Florida for January 2010
 dap = dap(
-    catolog = search("MOD16A2.006 PET"),
+    catolog = dplyr::filter(params, 
+                            id == 'MOD16A2.006', 
+                            varname == 'PET_500m'),
     AOI = AOI::aoi_get(state = "FL"),
     startDate = "2010-01-01",
     endDate   = "2010-01-31"

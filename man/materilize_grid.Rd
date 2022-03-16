@@ -4,7 +4,13 @@
 \alias{materilize_grid}
 \title{Materialize Grid from File or inputs}
 \usage{
-materilize_grid(file = NULL, ext = NULL, diminsion = NULL, projection = NULL)
+materilize_grid(
+  file = NULL,
+  ext = NULL,
+  diminsion = NULL,
+  projection = NULL,
+  fillValue = NULL
+)
 }
 \arguments{
 \item{file}{path to a gridded file (either .tif or .nc), or SpatRast object}

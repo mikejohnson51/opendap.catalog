@@ -1,7 +1,7 @@
 ---
-title: "Remapping TWI to NWM grid"
+title: "Grid to Catchment Mappings"
 author: "Mike Johnson"
-date: "3/15/2022"
+date: "3/16/2022"
 output: html_document
 ---
 
@@ -13,7 +13,6 @@ knitr::opts_chunk$set(
   message = FALSE
 )
 
-
 unlink("../private/twi.tif")
 unlink(paste0("../private/twi.tif", ".aux.xml"))
 ## TWI for CAMELs with VRT
@@ -21,6 +20,7 @@ library(whitebox)
 library(terra)
 library(sf)
 library(opendap.catalog)
+library(arrow)
 source("../private/aws.R")
 ```
 
@@ -116,11 +116,13 @@ file <- build_twi(dem, outfile = "../private/twi.tif")
 We next compute a catchment level mean TWI using `zonal`.
 
 ```{r}
-o <- zonal::execute_zonal(file, cats, "ID")
+o <- zonal::execute_zonal(file, cats, "ID", join = FALSE)
+names(o)[2] <- "TWI"
+head(o)
 ```
 
 ```{r, echo = FALSE}
-plot(o["V1"])
+plot(merge(cats, o, by = "ID")['TWI'])
 ```
 
 # Map to NWM grid
@@ -143,36 +145,182 @@ nwm_1km <- materilize_grid(
 (w <- weighting_grid(nwm_1km, cats, "ID"))
 ```
 
-## Inject values 
+## Define how to summarize
+
+For this example we are computing a grouped mean. This is done by multiplying a value by its weight/covergage fraction and dividning bt the sum of the coverage_fraction.
 
 ```{r}
-dt <- merge(w,
-  st_drop_geometry(o)[, c("ID", "V1")],
-  by = "ID"
-)
-
 # Define summary function:
-FUN <- function(x, w) {
-  sum((x * w), na.rm = TRUE) / sum(w, na.rm = TRUE)
-}
+areal.mean <- function(x, w) { 
+    sum((x * w), na.rm = TRUE) / sum(w, na.rm = TRUE) 
+  }
+```
 
-# apply FUN to 'pop2019' grouped by gID
-exe <- dt[, lapply(.SD, FUN = FUN, w = coverage_fraction),
-  by = "cell",
-  .SDcols = "V1"
+## Inject catchment values *into* cells...
+
+```{r}
+dt <- merge(w, o, by = "ID")
+
+# Apply areal.mean function over "TWI" grouped by cell
+exe <- dt[, lapply(.SD, FUN = areal.mean, w = coverage_fraction), 
+          by = "cell",
+          .SDcols = "TWI"
 ]
 
 # Inject TWI data with into grid
-nwm_1km[exe$cell] <- exe$V1
+nwm_1km[exe$cell] <- exe$TWI
 ```
-
-# Final Results!
 
 ```{r, echo = FALSE}
 xx <- crop(nwm_1km, project(vect(cats), crs(nwm_1km)))
 
 rasterVis::levelplot(xx)
+```
 
+## Distribute cell values *into* catchments
+
+Say a new value was computed at the grid level and needs to be mapped back to the catchments. The "psuedo" value is: 
+
+ - `TWI + a random number selected between 1 and 100`.
+
+Using the weight grid, this is a straight forward - _table based_ process!
+
+```{r}
+# Imagine this is a model time step updating the grid values...
+nwm_1km[] = values(nwm_1km) + sample(1:100, ncell(nwm_1km), replace = T)
+
+system.time({
+  # Extract needed cell from layer (1) using the weight grid
+  w$updated_value = nwm_1km[w$cell][,1]
+  
+  # Apply areal.mean function over "updated_value" grouping by ID
+  exe <- w[, lapply(.SD, FUN = areal.mean, w = coverage_fraction),
+    by = "ID",
+    .SDcols = "updated_value"
+  ]
+})
+  
+head(exe)
+```
+```{r, echo = FALSE}
+plot(merge(cats, exe)['updated_value'])
+```
+
+
+# Does this scale?
+
+So the question remains can this scale? I hope to show this with a quick naive, but more realisitic example of how the hydrofabric framework being build can support model engine goals:
+
+## Point to cloud environment 
+
+```{r}
+# AWS bucket location
+  bucket = 'formulations-dev'
+  subdir = 'hydrofabric/CONUS-hydrofabric/ngen-release/01a/2021-11-01/spatial'
+  local_pr = '/Users/mjohnson/github/zonal/to_build/pr_2020.nc'
+```
+
+## Read HUC01 hydrofabric
+
+```{r}
+cats <- sf::read_sf(file.path("/vsis3", bucket, subdir, "hydrofabric.gpkg"),         
+                    "catchments") 
+```
+
+## Build weight grid
+
+Since this is "new" we will build the weight grid and upload it to s3. This only needs to be done once for each grid/hydrofabric pair.
+
+```{r, eval = FALSE}
+write_parquet(weighting_grid(local_pr, cats, "ID"), 
+              "../private/gridmet_weights.parquet")
+
+put_object(
+    file      = "../private/gridmet_weights.parquet",
+    object    = file.path(subdir, 'gridmet_weights.parquet'),
+    bucket    = bucket,
+    multipart = TRUE
+  )
+
+unlink("../private/gridmet_weights.parquet")
+```
+
+The produced weights parquet file is 814 KB... that's it!
+
+## Grid --> catchments
+
+Say we want aggregated catchment averages of the 4th day of GridMet rainfall.
+  - Remote read the weights file
+  - Partial read the forcing file
+  - Apply `areal.mean` grouped by ID
+  
+  
+```{r}
+system.time({
+  w = read_parquet(file.path('s3:/',bucket, subdir, 'gridmet_weights.parquet'))
+  
+  w$rain = rast(local_pr)[[4]][w$cell]
+  
+  catchment_rainfall <- w[, lapply(.SD, FUN = areal.mean, w = coverage_fraction),
+      by = "ID",
+      .SDcols = "rain"
+    ]
+})
+
+head(catchment_rainfall)
+```
+
+### Naive hydrology
+
+This is two generally show how hydrofabric attributes can be used in computation. 
+We make a **naive** assumption that run off equals `rainfall * %sand`.
+
+  - Remote and partial read the `basin_attributes` file to get sand%
+  - Compute catchment level "runoff"
+
+```{r}
+system.time({
+  sand = read_parquet(file.path('s3:/',bucket, subdir, ... = 'basin_attributes.parquet'),
+                          col_select = c("ID", "sand-1m-percent"))
+  
+  model = merge(catchment_rainfall, sand, by = "ID")
+  model$runoff = model$rain * model$`sand-1m-percent`
+})
+```
+
+```{r, echo = FALSE}
+plot(merge(cats, model)[c("rain", 'runoff')], border = NA)
+```
+
+## Catchment --> grid
+
+If (for some reason) you want to take the catchment level "runoff" values,  and map them back to the grid, you can do so...
+
+```{r}
+system.time({
+  dt <- merge(w, model, by = "ID")
+  
+  # Apply areal.mean function over "TWI" grouped by cell
+  grid_runoff <- dt[, lapply(.SD, FUN = areal.mean, w = coverage_fraction), 
+            by = "cell",
+            .SDcols = "runoff"
+  ]
+})
+```
+
+```{r}
+tmp = materilize_grid(local_pr, fillValue = 0)
+tmp[grid_runoff$cell] <- grid_runoff$runoff
+plot(tmp)
+```
+```{r}
+#plot(crop(tmp, project(vect(cats), crs(tmp))))
+```
+
+```{r, echo = FALSE}
 unlink(file)
 unlink(paste0(file, ".aux.xml"))
 ```
+
+
+
