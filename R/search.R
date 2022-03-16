@@ -24,8 +24,6 @@ search_summary <- function(x) {
 #' @return data.frame
 #' @export
 
-query = "maca daily huss pr bnu-esm"
-
 search <- function(query = NULL, source = NULL) {
   if (!is.null(source)) {
     x <- opendap.catalog::params[opendap.catalog::params$id == source, ]

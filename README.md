@@ -2,7 +2,7 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
 
-[![Dependencies](https://img.shields.io/badge/dependencies-5/26-orange?style=flat)](#)
+[![Dependencies](https://img.shields.io/badge/dependencies-9/37-orange?style=flat)](#)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit/)
 [![Website

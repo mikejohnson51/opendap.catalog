@@ -40,3 +40,5 @@ navbar:
       href: articles/usgs_vrts.html
     - text: USGS LCMAP
       href: articles/lcmap.html
+    - text: Global grid IDs
+      href: articles/twi-mapping.html

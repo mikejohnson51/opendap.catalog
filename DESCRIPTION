@@ -8,6 +8,8 @@ Description: What the package does (one paragraph).
 Depends: 
     R(>= 3.5.0)
 Imports: 
+    data.table,
+    exactextractr,
     future.apply,
     ncmeta,
     RNetCDF,
@@ -25,7 +27,11 @@ Suggests:
     dplyr,
     future,
     knitr,
+    nhdplusTools,
+    rasterVis,
     rmarkdown,
+    sf,
+    whitebox,
     zonal
 Remotes: 
     mikejohnson51/AOI,

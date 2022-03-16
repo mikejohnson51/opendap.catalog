@@ -109,7 +109,7 @@ elev <- crop(fin, vect(AOI))
 plot(elev)
 ```
 
-We can wrap this up, more cleanly and time it. 
+We can wrap this up more cleanly and time it. 
 
 ```{r}
 system.time({
@@ -141,7 +141,7 @@ Effectively this process is using the local file to map to the remote NED files 
 This process is more akin to the "services" based approach but is _substantially_ easier to use given it acts as a local file
   
 ```{r}
-file <- "../data-raw/ned_1_tester.vrt"
+file <- "../docs/ned_USGS_1.vrt"
 utils:::format.object_size(file.size(file), "auto")
 ```
 
@@ -166,7 +166,7 @@ Here we do the "same" thing with command line GDAL (meaning any lanaguge that ca
 write_sf(AOI, "aoi.gpkg")
 
 # Crop VRT and generate TIF
-system('gdalwarp -cutline aoi.gpkg  -crop_to_cutline ../data-raw/ned_1_tester.vrt aoi.tif')
+system('gdalwarp -cutline aoi.gpkg  -crop_to_cutline ../docs/ned_USGS_1.vrt aoi.tif')
 
 # View
 plot(rast('aoi.tif'))
@@ -184,7 +184,7 @@ For now, I can also host this `vrt` file via HTTP using Github and apply the sam
 ```{r}
 system.time({
   public_vrt <- crop(
-    rast("/vsicurl/http://mikejohnson51.github.io/opendap.catalog/ned_1_tester.vrt"),
+    rast("/vsicurl/http://mikejohnson51.github.io/opendap.catalog/ned_USGS_1.vrt"),
     vect(AOI)
   )
 })

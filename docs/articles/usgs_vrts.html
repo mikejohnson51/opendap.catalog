@@ -46,7 +46,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -72,6 +72,12 @@
     </li>
     <li>
       <a href="../articles/usgs_vrts.html">USGS VRTs (next steps)</a>
+    </li>
+    <li>
+      <a href="../articles/lcmap.html">USGS LCMAP</a>
+    </li>
+    <li>
+      <a href="../articles/twi-mapping.html">Global grid IDs</a>
     </li>
   </ul>
 </li>
@@ -199,7 +205,7 @@ crs <span class="op">=</span> <span class="fl">4269</span>
 <span class="co"># Plot</span>
 <span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">elev</span><span class="op">)</span></code></pre></div>
 <p><img src="usgs_vrts_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
-<p>We can wrap this up, more cleanly and time it.</p>
+<p>We can wrap this up more cleanly and time it.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
   <span class="va">base_url</span> <span class="op">&lt;-</span> <span class="st">"/vsicurl/https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1/TIFF"</span>
@@ -211,7 +217,7 @@ crs <span class="op">=</span> <span class="fl">4269</span>
   <span class="va">elev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/src.html" class="external-link">sprc</a></span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="va">AOI</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##    user  system elapsed </span>
-<span class="co">##   6.905   5.949  22.268</span></code></pre>
+<span class="co">##   6.841   4.824  20.516</span></code></pre>
 <p><img src="usgs_vrts_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
 <p>While this appraoch requires no change to your system (expect the addition of a level 13 index gpkg) it requires a fairly nuanced understanding of GDAL/VSI and how the <code>r-spatial</code> packages utilize these. Additionally, its pretty slow even on fast internet.</p>
 </div>
@@ -223,7 +229,7 @@ crs <span class="op">=</span> <span class="fl">4269</span>
 <p>Effectively this process is using the local file to map to the remote NED files at the metadata level, before extracting data.</p>
 <p>This process is more akin to the “services” based approach but is <em>substantially</em> easier to use given it acts as a local file</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">file</span> <span class="op">&lt;-</span> <span class="st">"../data-raw/ned_1_tester.vrt"</span>
+<code class="sourceCode R"><span class="va">file</span> <span class="op">&lt;-</span> <span class="st">"../docs/ned_USGS_1.vrt"</span>
 <span class="fu">utils</span><span class="fu">:::</span><span class="fu"><a href="https://rdrr.io/r/utils/object.size.html" class="external-link">format.object_size</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html" class="external-link">file.size</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span>, <span class="st">"auto"</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] "1.9 Mb"</span></code></pre>
 <p>Getting the data …</p>
@@ -232,7 +238,7 @@ crs <span class="op">=</span> <span class="fl">4269</span>
   <span class="va">local_vrt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/pkg/terra/man/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="va">AOI</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##    user  system elapsed </span>
-<span class="co">##   0.450   0.117   2.492</span></code></pre>
+<span class="co">##   0.442   0.127   2.556</span></code></pre>
 <p><img src="usgs_vrts_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
 </div>
 <div class="section level4">
@@ -244,7 +250,7 @@ crs <span class="op">=</span> <span class="fl">4269</span>
 <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_write.html" class="external-link">write_sf</a></span><span class="op">(</span><span class="va">AOI</span>, <span class="st">"aoi.gpkg"</span><span class="op">)</span>
 
 <span class="co"># Crop VRT and generate TIF</span>
-<span class="fu"><a href="https://rdrr.io/r/base/system.html" class="external-link">system</a></span><span class="op">(</span><span class="st">'gdalwarp -cutline aoi.gpkg  -crop_to_cutline ../data-raw/ned_1_tester.vrt aoi.tif'</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/system.html" class="external-link">system</a></span><span class="op">(</span><span class="st">'gdalwarp -cutline aoi.gpkg  -crop_to_cutline ../docs/ned_USGS_1.vrt aoi.tif'</span><span class="op">)</span>
 
 <span class="co"># View</span>
 <span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="st">'aoi.tif'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -261,12 +267,12 @@ crs <span class="op">=</span> <span class="fl">4269</span>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span>
   <span class="va">public_vrt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span>
-    <span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="st">"/vsicurl/http://mikejohnson51.github.io/opendap.catalog/ned_1_tester.vrt"</span><span class="op">)</span>,
+    <span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="st">"/vsicurl/http://mikejohnson51.github.io/opendap.catalog/ned_USGS_1.vrt"</span><span class="op">)</span>,
     <span class="fu"><a href="https://rdrr.io/pkg/terra/man/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="va">AOI</span><span class="op">)</span>
   <span class="op">)</span>
 <span class="op">}</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##    user  system elapsed </span>
-<span class="co">##   0.465   0.123   2.418</span></code></pre>
+<span class="co">##   0.490   0.158   3.028</span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="s3-vrt">s3 VRT<a class="anchor" aria-label="anchor" href="#s3-vrt"></a>
@@ -281,7 +287,7 @@ crs <span class="op">=</span> <span class="fl">4269</span>
   <span class="op">)</span>
 <span class="op">}</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##    user  system elapsed </span>
-<span class="co">##   0.384   0.097   2.184</span></code></pre>
+<span class="co">##   0.401   0.108   2.525</span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="no-langauge-limits">No langauge limits!<a class="anchor" aria-label="anchor" href="#no-langauge-limits"></a>

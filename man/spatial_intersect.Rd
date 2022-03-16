@@ -14,7 +14,7 @@ spatial_intersect(x, AOI, merge = TRUE)
 \item{merge}{should the grid meta data be merged with the reduce catalog (default = TRUE)}
 }
 \value{
-
+data.frame
 }
 \description{
 Reduce and input catalog to those elements that intersect a given AOI

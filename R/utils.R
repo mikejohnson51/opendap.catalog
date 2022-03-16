@@ -40,13 +40,14 @@ dap_xyzv <- function(obj, varmeta = FALSE) {
   raw <- raw[!apply(raw, 1, function(x) {
     any(is.na(x))
   }), ]
+
   names(raw) <- c("varname", "X_name", "Y_name", "T_name")
 
   ll <- list()
 
   if (varmeta) {
     for (i in 1:nrow(raw)) {
-      if (ncmeta::nc_var(obj, raw$varname[i])$ndims > 3) {
+      if (unique(ncmeta::nc_var(obj, raw$varname[i])$ndims) > 3) {
         ll[[i]] <- NULL
         warning("We do not support 4D datasets:", raw$varname[i])
       } else {
@@ -396,10 +397,10 @@ var_to_terra <- function(var, dap) {
   ymax <- dap$Yn + 0.5 * resy
 
   r <- terra::rast(
-    xmin = xmin,
-    xmax = xmax,
-    ymin = ymin,
-    ymax = ymax,
+    xmin = min(xmin, xmax),
+    xmax = max(xmax, xmax),
+    ymin = min(ymin, ymax),
+    ymax = max(ymin, ymax),
     nrows = dap$nrows,
     ncols = dap$ncols,
     nlyrs = dap$Tdim,
@@ -425,6 +426,49 @@ var_to_terra <- function(var, dap) {
 
   r
 }
+
+#' Variable Array to SpatRast 2
+#' @param var numeric array
+#' @param dap dap description
+#' @return SpatRast
+#' @export
+#' @importFrom terra rast crop units
+
+var_to_terra2 <- function(dap) {
+
+  if (nrow(dap) != 1) {
+    stop("This function processes only 1 DAP row at a time... currently there are ", nrow(dap))
+  }
+
+  file <- sub("\\?.*", "", dap$URL)
+
+  resx <- (dap$Xn - dap$X1) / (dap$ncols - 1)
+  resy <- (dap$Yn - dap$Y1) / (dap$nrows - 1)
+
+  xmin <- dap$X1 - 0.5 * resx
+  xmax <- dap$Xn + 0.5 * resx
+  ymin <- dap$Y1 - 0.5 * resy
+  ymax <- dap$Yn + 0.5 * resy
+
+  r <- terra::rast(
+    xmin = min(xmin, xmax),
+    xmax = max(xmax, xmax),
+    ymin = min(ymin, ymax),
+    ymax = max(ymin, ymax),
+    crs = dap$proj
+  )
+
+  r = crop(rast(file), r)
+  terra::units(r) <- dap$units
+
+  names(r) <- seq.POSIXt(as.POSIXct(dap$startDate),
+                         as.POSIXct(dap$endDate),
+                         length.out  = dap$Tdim
+  )
+
+  r
+}
+
 
 #' Get DAP Array
 #' @param dap dap description
