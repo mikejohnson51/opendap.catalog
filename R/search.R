@@ -31,7 +31,7 @@ search <- function(query = NULL, source = NULL) {
     x <- opendap.catalog::params
   }
 
-  subs <- x[, !names(x) %in% c("grid.id", "URL", "tiled", "units", "T_name", "nT", "duration")]
+  subs <- x[, !names(x) %in% c("grid_id", "URL", "tiled", "units", "T_name", "nT", "duration")]
 
   if (!is.null(query)) {
     .query(x, query, subs)

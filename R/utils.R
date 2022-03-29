@@ -307,7 +307,7 @@ spatial_intersect <- function(x, AOI, merge = TRUE) {
   grids <- opendap.catalog::grids[!is.na(opendap.catalog::grids$proj), ]
 
   # Only work on grid ids found in x
-  grids <- grids[grids$grid.id %in% x$grid.id, ]
+  grids <- grids[grids$grid_id %in% x$grid_id, ]
 
   bboxs <- vect(sapply(1:nrow(grids), function(i) { make_vect(grids[i, ]) }))
   bbox_int = relate(bboxs, project(terra::union(vect(AOI)), grids$proj[1]), "intersects")
@@ -316,7 +316,7 @@ spatial_intersect <- function(x, AOI, merge = TRUE) {
   if (merge) {
     merge(x, g)
   } else {
-    x[x$grid.id %in% g$grid.id, ]
+    x[x$grid_id %in% g$grid_id, ]
   }
 }
 
