@@ -20,6 +20,9 @@ ned <- data.frame(rbind(
     units     = "m")
 ))
 
+
+
+
 # Loop over the three resolutions
 for (i in 1:length(ned)) {
 
@@ -30,12 +33,12 @@ for (i in 1:length(ned)) {
   vrt_file <- paste0(paste0("data-raw/ned_", ned$id[i], ".vrt"))
 
   # If VRT does NOT exist, build VRT
-  if (!file.exists(out_file)) {
+  if (!file.exists(vrt_file)) {
     # read the corresponding index.gpkg
     files <- sf::read_sf(ned$domain_url[i])
 
     # Build full HTTPS paths to "./current/"
-    files <- c(file.path(ned$URL[i], "TIFF/current", gsub("[.]/", "", files$location))))
+    files <- c(file.path(ned$URL[i], "TIFF/current", gsub("[.]/", "", files$location)))
 
     # write list of files to text file
     write.table(files, txt_file, row.names = FALSE, col.names = FALSE, quote = FALSE)
