@@ -477,7 +477,7 @@ var_to_terra2 <- function(dap) {
 #' @importFrom RNetCDF open.nc
 
 get_data <- function(dap) {
-  nc <- RNetCDF::open.nc(dap$URL)
+  nc <- RNetCDF::open.nc(paste0(dap$URL, "#fillmismatch"))
   on.exit(close.nc(nc))
   as.vector(RNetCDF::var.get.nc(nc, dap$varname, unpack = TRUE))
 }

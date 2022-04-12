@@ -40,4 +40,3 @@ params <- raw |>
 jsonlite::write_json(params, "docs/cat_params.json", pretty = TRUE)
 usethis::use_data(params, overwrite = TRUE)
 
-

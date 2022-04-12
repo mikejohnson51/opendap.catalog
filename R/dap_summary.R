@@ -1,3 +1,10 @@
+vrt_summary <- function(vrt = NULL, url = NULL) {
+
+
+}
+
+
+
 #' Print Summary Information About a OpenDAP Resource
 #' @description Print summary information about a DAP summary
 #' @param dap data.frame from catalog or dap_crop

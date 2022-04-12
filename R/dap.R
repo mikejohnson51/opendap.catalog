@@ -22,15 +22,40 @@ dap <- function(URL = NULL,
                 varname = NULL,
                 verbose = TRUE) {
 
-  dap <- dap_crop(
-    URL = URL,
-    catolog = catolog,
-    AOI = AOI,
-    startDate = startDate,
-    endDate = endDate,
-    varname = varname,
-    verbose = verbose
-  )
+  urls = c(URL, catolog$URL)
 
-  dap_get(dap)
+  if(any(getExtension(urls) == 'vrt')){
+    vrt_crop_get(URL, catolog, AOI)
+  } else {
+    dap <- dap_crop(
+      URL = URL,
+      catolog = catolog,
+      AOI = AOI,
+      startDate = startDate,
+      endDate = endDate,
+      varname = varname,
+      verbose = verbose)
+
+    dap_get(dap)
+
+  }
+
 }
+
+vrt_crop_get = function(URL = NULL, catolog = NULL, AOI = NULL, verbose = TRUE){
+
+if (is.null(URL)) { URL <- catolog$URL }
+
+vrts =  lapply(URL, terra::rast)
+AOIv = terra::vect(AOI)
+
+fin = tryCatch({
+  crop(rast(vrts), project(AOIv, crs(vrts[[1]])))
+}, error = function(e) {
+  lapply(1:length(vrts), function(x){ crop(vrts[[x]], project(AOIv, crs(r[[x]]))) })
+})
+
+fin
+
+}
+

@@ -1,3 +1,8 @@
+getExtension = function(x){
+  pos <- regexpr("\\.([[:alnum:]]+)$", x)
+  ifelse(pos > -1L, substring(x, pos + 1L), "")
+}
+
 #' Add Variable Metadata
 #' @param raw a data.frame
 #' @param verbose should messaging be displayed?
