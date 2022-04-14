@@ -24,8 +24,8 @@ dap <- function(URL = NULL,
 
   urls = c(URL, catolog$URL)
 
-  if(any(getExtension(urls) == 'vrt')){
-    vrt_crop_get(URL, catolog, AOI)
+  if(any(getExtension(urls) %in% c('vrt', "tif"))){
+    vrt_crop_get(urls, catolog, AOI)
   } else {
     dap <- dap_crop(
       URL = URL,
