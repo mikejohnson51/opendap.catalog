@@ -45,15 +45,16 @@ meta[["terraclim"]] <- read_tds("http://thredds.northwestknowledge.net:8080/thre
   mutate(tiled = "")
 
 
-meta[["terraclim_normals"]] = read_tds('http://thredds.northwestknowledge.net:8080/thredds/catalog/TERRACLIMATE_ALL/summaries/catalog.html',
-         "terraclim_normals", "") %>%
+meta[["terraclim_normals"]]  = read_tds('http://thredds.northwestknowledge.net:8080/thredds/catalog/TERRACLIMATE_ALL/summaries/catalog.html',
+         "terraclim_normals", "") |>
   mutate(URL = paste0('http://thredds.northwestknowledge.net:8080/thredds/dodsC/TERRACLIMATE_ALL/summaries/', basename(link))) |>
   mutate(link2 = gsub(".nc", "", basename(link))) %>%
+  filter(link2 != "summaries") |>
   tidyr::separate(link2, into = c("scenario", 'variable'), sep = "_") %>%
   mutate(scenario = gsub("TerraClimate", "", scenario)) %>%
   filter(!is.na(variable)) |>
   dap_meta() |>
-  mutate(tiled = "")
+  mutate(tiled = "", interval = "monthly normal")
 
 
 ####  VIC ####

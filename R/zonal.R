@@ -21,8 +21,9 @@ weighting_grid <- function(file, AOI, ID) {
     include_cols = ID,
     progress = FALSE,
     include_cell = TRUE
-  ) |>
-    rbindlist()
+  )
+
+  w = rbindlist(w)
 
   w$value = NULL
 
