@@ -1,5 +1,5 @@
 #' Get DAP resource data
-#' @param dap data.frame from catolog or dap_crop
+#' @param dap data.frame from catalog or dap_crop
 #' @param varname  name of variable to extract. If NULL, then get all
 #' @return SpatRaster
 #' @export

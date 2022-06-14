@@ -31,6 +31,7 @@ read_dap_file <- function(URL, id, varmeta = TRUE) {
 #' @importFrom ncmeta nc_coord_var
 
 dap_xyzv <- function(obj, varmeta = FALSE) {
+
   if (class(obj) != "NetCDF") {
     obj <- RNetCDF::open.nc(obj)
     on.exit(close.nc(obj))

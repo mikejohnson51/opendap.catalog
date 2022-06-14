@@ -1,4 +1,4 @@
-#' OpenDAP Catolog Grids
+#' OpenDAP Catalog Grids
 #' @docType data
 #' @usage data(grids)
 #' @keywords datasets
@@ -7,7 +7,7 @@
 
 "grids"
 
-#' OpenDAP Catolog Parameters
+#' OpenDAP Catalog Parameters
 #' @docType data
 #' @usage data(params)
 #' @keywords datasets

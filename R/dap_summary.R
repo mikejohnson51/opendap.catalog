@@ -31,9 +31,9 @@ dap_summary <- function(dap = NULL, url = NULL) {
       " (xmin, xmax, ymin, ymax)"
     )
 
-    minDate <- min(as.Date(dap$startDate))
-    maxDate <- max(as.Date(dap$endDate))
-    tDim <- length(seq.Date(minDate, maxDate, by = dap$interval[1]))
+    minDate <- min(as.POSIXct(dap$startDate))
+    maxDate <- max(as.POSIXct(dap$endDate))
+    tDim <- length(seq.POSIXt(minDate, maxDate, by = dap$interval[1]))
 
     var <- unique(paste0(dap$varname, " [", dap$units, "] (", dap$long_name, ")"))
 
