@@ -15,7 +15,7 @@ shp <- AOI::aoi_get(state = "FL")
 # Opendap grids, remove NA grid IDs, NA projections, and X1 values of 0
 grid_df <-
   opendap.catalog::grids %>%
-  dplyr::filter(!is.na(grid_id), !is.na(proj), X1 != 0)
+  dplyr::filter(is.na(grid_id), !is.na(proj), X1 != 0)
 
 length(unique(opendap.catalog::grids$grid_id))
 length(unique(grid_df$grid_id))
