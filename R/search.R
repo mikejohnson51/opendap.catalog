@@ -24,11 +24,29 @@ search_summary <- function(x) {
 #' @return data.frame
 #' @export
 
-search <- function(query = NULL, source = NULL) {
+search <- function(AOI = NULL, query = NULL, source = NULL) {
   if (!is.null(source)) {
     x <- opendap.catalog::params[opendap.catalog::params$id == source, ]
   } else {
     x <- opendap.catalog::params
+  }
+
+  if (!is.null(AOI)) {
+
+    # identify grid IDs for AOI
+    id_subs <- grid_subset(aoi = AOI)
+
+    if(!is.null(id_subs)) {
+
+      # subset x to relevant grids
+      x <- x[x$grid_id %in% id_subs, ]
+
+    } else {
+      x
+    }
+
+  } else {
+    x
   }
 
   subs <- x[, !names(x) %in% c("grid_id", "URL", "tiled", "units", "T_name", "nT", "duration")]
@@ -38,6 +56,7 @@ search <- function(query = NULL, source = NULL) {
   } else {
     x
   }
+
 }
 
 #' @title Internal query
@@ -81,4 +100,162 @@ search <- function(query = NULL, source = NULL) {
   x <- x[x$rank == min(indices), ]
 
   x[order(x$rank), ]
+}
+
+#' @title Creates a grid from a grid parameters found in opendap.catalog::grids and then projects the grid to the CRS of input AOI - Internal use
+#' @description Internal helper function for the grid_subset function and is used in conjunction with the spatial_subset function.
+#' @param aoi SF object
+#' @param grid_data catalog data.frame from calling opendap.catalog::grids
+#' @details grid_data parameter is built to work on a single row of data from opendap.catalog::grids
+#' @return data.frame
+#' @export
+#' @importFrom magrittr %>%
+#' @importFrom sf st_bbox st_as_sfc st_crs st_transform st_as_sf
+
+fetch_grid <- function(aoi, grid_data) {
+
+  # X Coordinates
+  xcoords <- seq(
+    grid_data$X1,
+    grid_data$Xn,
+    length.out = grid_data$ncols
+  )
+
+  # # Check x coords
+  # if(any(xcoords > 180.001)) { xcoords = xcoords - 360}
+
+  if(grid_data$toptobottom == TRUE | is.na(grid_data$toptobottom)) {
+
+    # Grids going from "top to bottom"
+
+    # Y Coordinates
+    ycoords <- seq(
+      grid_data$Y1,
+      grid_data$Yn,
+      length.out = grid_data$nrows # by = grid_data$resY
+    )
+
+  } else if(grid_data$toptobottom == FALSE) {
+
+    # Grids going from "Bottom to Top"
+
+    # Y Coordinates
+    ycoords <- seq(
+      grid_data$Yn,
+      grid_data$Y1,
+      length.out = grid_data$nrows # by = grid_data$resY
+    )
+
+  }
+
+  domain <-
+    sf::st_as_sfc(
+      sf::st_bbox(
+        c(
+          xmin = min(xcoords),
+          xmax = max(xcoords),
+          ymin = min(ycoords),
+          ymax = max(ycoords)
+        ),
+        crs =  sf::st_crs(grid_data$proj)
+      )
+    ) %>%
+    sf::st_transform(sf::st_crs(aoi)) %>%
+    sf::st_as_sf()
+
+  return(domain)
+
+}
+
+#' @title Check grids for intersection with AOI - Internal use
+#' @description Compares an input AOI and a grid created from the fetch_grid function and returns the grid ID number of any overlapping grids. Internal helper function for the grid_subset function and is used in conjunction with the fetch_grid function.
+#' @param aoi SF object
+#' @param grid_domain SF object representing spatial domain of grid, output of fetch_grid function
+#' @details Function is designed to take an AOI and compares it to the outputs from fetch_grid, returns the intersectinggrid ID number as a character, and NULL if no intersection
+#' @return character
+#' @export
+#' @importFrom magrittr %>%
+#' @importFrom sf st_bbox st_as_sfc st_as_sf st_intersects
+
+spatial_subset <- function(aoi, grid_domain) {
+
+  aoi_bb   <-
+    aoi %>%
+    sf::st_bbox() %>%
+    sf::st_as_sfc() %>%
+    sf::st_as_sf() %>%
+    sf::st_intersects(grid_domain)
+
+  if(length(aoi_bb[[1]]) == 1) {
+
+    # return Grid ID if AOI and grid intersect
+    return(grid_domain$grid_id)
+
+  } else if(length(aoi_bb[[1]]) == 0) {
+
+    # return Grid ID if NO intesection between AOI and grid
+    return(NULL)
+  }
+
+}
+
+#' @title Check grids for intersection with AOI - Internal use
+#' @description Function is designed to take an AOI and compares it to the spatial extents of the grids found in opendap.catalog::grids, the function returns a list of grid IDs for any grid interesecting the AOI - Internal use
+#' @param aoi SF object
+#' @details Internal use as a spatial query for search function
+#' @return list
+#' @export
+#' @importFrom magrittr %>%
+#' @importFrom dplyr filter mutate
+#' @importFrom sf st_as_sfc st_as_sf st_geometry_type st_bbox
+
+grid_subset <- function(aoi) {
+
+  # remove NA grid IDs, NA projections, and grids w/ 0 in X1 column
+  grid_index <-
+    opendap.catalog::grids %>%
+    dplyr::filter(!is.na(grid_id), !is.na(proj), X1 != 0)
+
+  if(methods::is(aoi, 'bbox')){
+    aoi = sf::st_as_sfc(aoi)
+  }
+
+  if(methods::is(aoi, 'sp')){
+    aoi = sf::st_as_sf(aoi)
+  }
+
+  if(methods::is(aoi, 'sfc')){
+    aoi = sf::st_as_sf(aoi)
+  }
+
+  if(any(sf::st_geometry_type(aoi) == "POINT" & nrow(aoi) > 1, is.null(nrow(aoi)))){
+    message("AOI is a point or NULL")
+    aoi = sf::st_as_sfc(sf::st_bbox(aoi))
+  }
+
+  # split grids into list
+  bb_index <-
+    grid_index %>%
+    base::split(grid_index, f = grid_index$grid_id)
+
+
+  message("Subsetting grids to AOI bounding box...")
+
+  # create grid for each grid ID, compare to AOI, and output grid IDs of grids intersecting input AOI
+  grid_select <- unname(
+    unlist(
+      lapply(bb_index, FUN = function(y) {
+        fetch_grid(aoi = aoi, grid_data = y) %>%
+          sf::st_as_sf() %>%
+          dplyr::mutate(
+            grid_id = y$grid_id,
+            proj    = y$proj
+          ) %>%
+          spatial_subset(aoi = aoi, grid_domain = .)
+      }
+      )
+    )
+  )
+
+  return(grid_select)
 }
