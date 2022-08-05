@@ -35,7 +35,7 @@ search <- function(AOI = NULL, query = NULL, source = NULL) {
   if (!is.null(AOI)) {
 
     # identify grid IDs for AOI
-    id_subs <- grid_subset(aoi = AOI)
+    id_subs <- grid_subset(AOI = AOI)
 
     if(!is.null(id_subs)) {
 
