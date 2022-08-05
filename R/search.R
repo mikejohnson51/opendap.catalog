@@ -110,7 +110,7 @@ search <- function(AOI = NULL, query = NULL, source = NULL) {
 #' @details grid_data parameter is built to work on a single row of data from opendap.catalog::grids
 #' @return data.frame
 #' @export
-#' @importFrom magrittr %>%
+#' @importFrom magrittr `%>%`
 #' @importFrom sf st_bbox st_as_sfc st_crs st_transform st_as_sf
 
 fetch_grid <- function(AOI, grid_data) {
@@ -179,7 +179,7 @@ fetch_grid <- function(AOI, grid_data) {
 #' @details Function is designed to take an AOI and compares it to the outputs from fetch_grid, returns the intersecting grid ID number as a character, and NULL if no intersection
 #' @return character
 #' @export
-#' @importFrom magrittr %>%
+#' @importFrom magrittr `%>%`
 #' @importFrom sf st_bbox st_as_sfc st_as_sf st_intersects
 
 spatial_subset <- function(AOI, grid_domain) {
@@ -210,7 +210,7 @@ spatial_subset <- function(AOI, grid_domain) {
 #' @details Internal use as a spatial query for search function
 #' @return list
 #' @export
-#' @importFrom magrittr %>%
+#' @importFrom magrittr `%>%`
 #' @importFrom dplyr filter mutate
 #' @importFrom sf st_as_sfc st_as_sf st_geometry_type st_bbox
 
