@@ -399,7 +399,7 @@ var_to_terra <- function(var, dap) {
 
   r <- terra::rast(
     xmin = min(xmin, xmax),
-    xmax = max(xmax, xmax),
+    xmax = max(xmin, xmax),
     ymin = min(ymin, ymax),
     ymax = max(ymin, ymax),
     nrows = dap$nrows,
