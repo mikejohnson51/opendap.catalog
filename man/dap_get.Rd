@@ -7,7 +7,7 @@
 dap_get(dap, varname = NULL)
 }
 \arguments{
-\item{dap}{data.frame from catolog or dap_crop}
+\item{dap}{data.frame from catalog or dap_crop}
 
 \item{varname}{name of variable to extract. If NULL, then get all}
 }

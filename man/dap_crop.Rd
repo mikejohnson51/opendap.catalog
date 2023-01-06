@@ -6,7 +6,7 @@
 \usage{
 dap_crop(
   URL = NULL,
-  catolog = NULL,
+  catalog = NULL,
   AOI = NULL,
   startDate = NULL,
   endDate = NULL,
@@ -17,7 +17,7 @@ dap_crop(
 \arguments{
 \item{URL}{local file path or dodC URL}
 
-\item{catolog}{subset of open.dap catolog}
+\item{catalog}{subset of open.dap catalog}
 
 \item{AOI}{sf object}
 

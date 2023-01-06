@@ -21,7 +21,7 @@ dap_crop <- function(URL = NULL,
                      verbose = TRUE) {
 
   if (!is.null(URL)) {
-    catalog <- read_dap_file(URL, id = "local")
+    catalog <- read_dap_file(URL, varname = varname, id = "local")
     catalog$tiled <- ""
   }
 
@@ -85,13 +85,13 @@ dap_crop <- function(URL = NULL,
     AOIspat <- terra::vect(AOI)
 
     if (catalog$id[1] != "local") {
-      catalog = spatial_intersect(x = catalog, AOI, merge = TRUE)
+      catalog = spatial_intersect(x = catalog, sf::st_union(AOI), merge = TRUE)
     }
 
     out <- lapply(1:nrow(catalog), function(i) {
       tryCatch(
         {
-          intersect(make_ext(catalog[i, ]), ext(project(AOIspat, catalog$proj[i])))
+          terra::intersect(ext(project(AOIspat, catalog$proj[i])), make_ext(catalog[i, ]))
         },
         error = function(e) {
           NULL
@@ -127,7 +127,6 @@ dap_crop <- function(URL = NULL,
       catalog$nrows[i] <- abs(diff(ys)) + 1
     }
   }
-
 
   if (any(grepl("XY", catalog$tiled))) {
     catalog$URL <- paste0(catalog$URL, "/", catalog$tile, ".ncml?", catalog$varname, catalog$T, catalog$Y, catalog$X)

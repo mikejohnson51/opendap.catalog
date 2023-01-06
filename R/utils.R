@@ -7,11 +7,11 @@
 #' @export
 #' @importFrom RNetCDF open.nc close.nc
 
-read_dap_file <- function(URL, id, varmeta = TRUE) {
+read_dap_file <- function(URL, varname = NULL, id, varmeta = TRUE) {
   nc <- RNetCDF::open.nc(URL)
   on.exit(close.nc(nc))
 
-  raw <- dap_xyzv(nc, varmeta = varmeta)
+  raw <- dap_xyzv(obj = nc, varname, varmeta = varmeta)
   raw$URL <- URL
   raw$id <- id
 
@@ -28,16 +28,24 @@ read_dap_file <- function(URL, id, varmeta = TRUE) {
 #' @return data.frame with (varname, X_name, Y_name, T_name)
 #' @export
 #' @importFrom RNetCDF open.nc close.nc
-#' @importFrom ncmeta nc_coord_var
+#' @importFrom ncmeta nc_coord_var nc_vars
 
-dap_xyzv <- function(obj, varmeta = FALSE) {
+dap_xyzv <- function(obj, varname = NULL, varmeta = FALSE) {
 
   if (class(obj) != "NetCDF") {
     obj <- RNetCDF::open.nc(obj)
     on.exit(close.nc(obj))
   }
 
-  raw <- ncmeta::nc_coord_var(obj)[, c("variable", "X", "Y", "T")]
+
+  raw = suppressWarnings({
+    tryCatch({
+    ncmeta::nc_coord_var(obj, variable = varname)[, c("variable", "X", "Y", "T")]
+  }, error = function(e){ stop(glue::glue(
+    "Error in file format. Try specifying variable using one of: \n{paste(nc_vars(obj)$name, collapse = '\n')}"))
+    })
+  })
+
   raw <- raw[!apply(raw, 1, function(x) {
     any(is.na(x))
   }), ]
@@ -367,6 +375,7 @@ make_vect <- function(cat) {
 #' @export
 
 go_get_dap_data <- function(dap) {
+
   tryCatch(
     {
       if (grepl("http", dap$URL)) {
@@ -389,6 +398,9 @@ go_get_dap_data <- function(dap) {
 #' @importFrom terra rast flip units
 
 var_to_terra <- function(var, dap) {
+
+  if(dap$ncols == 1 & dap$nrows == 1) { return(var) }
+
   resx <- (dap$Xn - dap$X1) / (dap$ncols - 1)
   resy <- (dap$Yn - dap$Y1) / (dap$nrows - 1)
 

@@ -16,15 +16,25 @@ dap_summary <- function(dap = NULL, url = NULL) {
     dap <- dap_crop(url)
   } else {
     resx <- (dap$Xn - dap$X1) / (dap$ncols - 1)
+    resx = ifelse(is.na(resx), 'POINT', resx)
     resy <- (dap$Yn - dap$Y1) / (dap$nrows - 1)
+    resy = ifelse(is.na(resy), 'POINT', resx)
 
-    xmin <- min(dap$X1 - 0.5 * resx)
-    xmax <- max(dap$Xn + 0.5 * resx)
-    ymin <- min(dap$Y1 - 0.5 * resy)
-    ymax <- max(dap$Yn + 0.5 * resy)
-
-    ncol <- round((xmax - xmin) / unique(resy)[1])
-    nrow <- round((ymax - ymin) / unique(resx)[1])
+    if(resx == "POINT"){
+      xmin <- dap$X1
+      xmax <- dap$X1
+      ymin <- dap$Y1
+      ymax <- dap$Y1
+      ncol <- 1
+      nrow <- 1
+    } else {
+      xmin <- min(dap$X1 - 0.5 * resx)
+      xmax <- max(dap$Xn + 0.5 * resx)
+      ymin <- min(dap$Y1 - 0.5 * resy)
+      ymax <- max(dap$Yn + 0.5 * resy)
+      ncol <- round((xmax - xmin) / unique(resy)[1])
+      nrow <- round((ymax - ymin) / unique(resx)[1])
+    }
 
     ext <- paste0(
       paste(round(c(xmin, xmax, ymin, ymax), 2), collapse = ", "),
@@ -32,8 +42,14 @@ dap_summary <- function(dap = NULL, url = NULL) {
     )
 
     minDate <- min(as.POSIXct(dap$startDate))
+
     maxDate <- max(as.POSIXct(dap$endDate))
-    tDim <- length(seq.POSIXt(minDate, maxDate, by = dap$interval[1]))
+
+    if(dap$interval[1] != 0){
+      tDim <- length(seq.POSIXt(minDate, maxDate, by = dap$interval[1]))
+    } else {
+      tDim = 1
+    }
 
     var <- unique(paste0(dap$varname, " [", dap$units, "] (", dap$long_name, ")"))
 
@@ -72,7 +88,7 @@ dap_summary <- function(dap = NULL, url = NULL) {
           ", ",
           round(dap$resY[1], 3),
           ", ",
-          dap$interval[1]
+          max(1, dap$interval[1])
         )
       )
       cat("\nextent:     ", ext)

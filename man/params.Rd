@@ -3,7 +3,7 @@
 \docType{data}
 \name{params}
 \alias{params}
-\title{OpenDAP Catolog Parameters}
+\title{OpenDAP Catalog Parameters}
 \format{
 An data.frame
 }
@@ -14,6 +14,6 @@ Build in package
 data(params)
 }
 \description{
-OpenDAP Catolog Parameters
+OpenDAP Catalog Parameters
 }
 \keyword{datasets}

@@ -4,7 +4,7 @@
 \alias{dap_xyzv}
 \title{Get XYTV data from DAP URL}
 \usage{
-dap_xyzv(obj, varmeta = FALSE)
+dap_xyzv(obj, varname = NULL, varmeta = FALSE)
 }
 \arguments{
 \item{obj}{an OpenDap URL or NetCDF object}

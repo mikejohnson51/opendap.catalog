@@ -7,7 +7,7 @@ ids = base |>
 
 ids = grep("vrt$",ids, value = TRUE)
 
-og_urls = paste0("/vsicurl/", base, ids)
+og_urls = glue::glue("/vsicurl/{base}{ids}")
 
 parse_polaris_description = function(x){
 
@@ -69,24 +69,19 @@ for(i in 1:length(og_urls)){
 p = dplyr::bind_rows(polaris)
 
 
-
-dep = data.frame(id = c("3DEP 30m", "3DEP 10m", "3DEP 60m"),
-           URL = c('/vsicurl/https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1/TIFF/USGS_Seamless_DEM_1.vrt',
-'/vsicurl/https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/13/TIFF/USGS_Seamless_DEM_13.vrt',
-'/vsicurl/https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/2/TIFF/USGS_Seamless_DEM_2.vrt'),
-           varname = rep("elevation", 3),
-description = c("30m elevation", '10m elevation', "60m Alaska elevation"),
-           units = rep("meters", 3))
-
-o = make_vect(dep[1,]) |>
-  as("Spatial") |>
-  sf::st_as_sf()
-
-AOI::aoi_map(o)
-
-plot(r)
-
-r2 = terra::rast('/Users/mjohnson/github/opendap.catalog/data-raw/ned/ned_USGS_2.vrt')
+dep = data.frame(
+  id = c("3DEP 30m", "3DEP 10m", "3DEP 60m Alaska", "GEBCO2019", "NASADEM"),
+  URL = c(
+    '/vsicurl/https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1/TIFF/USGS_Seamless_DEM_1.vrt',
+    '/vsicurl/https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/13/TIFF/USGS_Seamless_DEM_13.vrt',
+    '/vsicurl/https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/2/TIFF/USGS_Seamless_DEM_2.vrt',
+    '/vsicurl/https://public.services.aad.gov.au/datasets/science/GEBCO_2019_GEOTIFF/GEBCO_2019.tif',
+    '/vsicurl/https://opentopography.s3.sdsc.edu/raster/NASADEM/NASADEM_be.vrt'
+  ),
+  varname = rep("elevation", 5),
+  description = c("30m", '10m', "60m", "GEBCO+SRTM", "NASADEM"),
+  units = rep("meters", 5)
+)
 
 for(i in 1:nrow(dep)){
   r   = terra::rast(dep$URL[i])
@@ -102,7 +97,54 @@ for(i in 1:nrow(dep)){
 }
 
 
+year = c(2019, 2016, 2011, 2008, 2006, 2004, 2001)
+dataset = c('Land_Cover', 'Impervious', 'Tree_Canopy')
+landmass = c('L48', 'AK', 'HI', 'PR')
+
+g = expand.grid(year, dataset, landmass)
+
+source <- "https://storage.googleapis.com/feddata-r/nlcd/"
+file <- paste0(g$Var1, "_", g$Var2, "_", g$Var3, ".tif")
+
+df = data.frame(
+  URL = paste0(source, file),
+  description = paste("NLCD", g$Var2, g$Var3,  g$Var1),
+  id = paste("NLCD", g$Var2, g$Var3,  g$Var1, sep = "_"),
+  varname = g$Var2,
+  units = ""
+)
+
+for(i in 1:nrow(df)){
+  df$exists[i] =  df$URL[i] %>%
+    httr::HEAD() %>%
+    httr::status_code() %>%
+    identical(200L)
+
+  message(i)
+
+}
+
+df = filter(df, exists) %>%
+  mutate(URL = paste0("/vsicurl/", URL)) %>%
+  select(-exists)
+
+for(i in 1:nrow(df)){
+  r   = terra::rast(df$URL[i])
+  df$X1[i]      = terra::xmin(r)
+  df$Xn[i]      = terra::xmax(r)
+  df$Y1[i]      = terra::xmin(r)
+  df$Yn[i]      = terra::ymax(r)
+  df$resX[i]    = terra::xres(r)
+  df$resY[i]    = terra::yres(r)
+  df$ncols[i]   = terra::ncol(r)
+  df$nrows[i]   = terra::nrow(r)
+  df$proj[i]    = sf::st_crs(r)$proj4string
+
+  message(i)
+}
+
+vrts = bind_rows(list(df, dep, p))
 
 
 
-saveRDS(p, "data-raw/polaris_vrt.rds")
+saveRDS(vrts, "data-raw/vrts.rds")

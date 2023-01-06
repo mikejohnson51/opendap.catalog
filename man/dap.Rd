@@ -2,22 +2,26 @@
 % Please edit documentation in R/dap.R
 \name{dap}
 \alias{dap}
-\title{Get DAP}
+\title{Get Data}
 \usage{
 dap(
   URL = NULL,
-  catolog = NULL,
+  catalog = NULL,
   AOI = NULL,
   startDate = NULL,
   endDate = NULL,
   varname = NULL,
+  g = NULL,
+  start = NULL,
+  end = NULL,
+  toptobottom = FALSE,
   verbose = TRUE
 )
 }
 \arguments{
 \item{URL}{local file path or dodC URL}
 
-\item{catolog}{subset of open.dap catolog}
+\item{catalog}{subset of open.dap catalog}
 
 \item{AOI}{sf object}
 
@@ -33,6 +37,9 @@ dap(
 data.frame
 }
 \description{
+this function provides a consistenet data access protocol (dap) to a wide
+range of local and remote resources including VRT, TDS, NetCDF
+
 Define and get data from a DAP resource
 }
 \details{

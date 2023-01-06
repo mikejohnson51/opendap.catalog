@@ -3,7 +3,7 @@
 \docType{data}
 \name{grids}
 \alias{grids}
-\title{OpenDAP Catolog Grids}
+\title{OpenDAP Catalog Grids}
 \format{
 An data.frame
 }
@@ -14,6 +14,6 @@ Build in package
 data(grids)
 }
 \description{
-OpenDAP Catolog Grids
+OpenDAP Catalog Grids
 }
 \keyword{datasets}

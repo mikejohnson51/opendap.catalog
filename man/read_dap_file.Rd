@@ -4,7 +4,7 @@
 \alias{read_dap_file}
 \title{Read from a OpenDAP landing page}
 \usage{
-read_dap_file(URL, id, varmeta = TRUE)
+read_dap_file(URL, varname = NULL, id, varmeta = TRUE)
 }
 \arguments{
 \item{URL}{URL to OpenDap resource}
