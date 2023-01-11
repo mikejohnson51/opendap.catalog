@@ -29,11 +29,14 @@ vrt_crop_get(
 
 \item{end}{for non "dated" items, end can be called by index}
 
-\item{toptobottom}{should data be inversed?}
+\item{toptobottom}{should data be inverse?}
 
-\item{verbose}{should warning be emmited?}
+\item{verbose}{should warning be emitted?}
 
 \item{grid}{a list containing an extent (), and}
+}
+\value{
+SpatRaster
 }
 \description{
 Terra Based Cropping

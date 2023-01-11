@@ -18,7 +18,7 @@ dap_get <- function(dap, varname = NULL) {
   }
 
   out <- future_lapply(1:nrow(dap), FUN = function(x) {
-    go_get_dap_data(dap[x, ])
+    go_get_dap_data(dap = dap[x, ])
   })
 
   names(out) <- sub("_$", "", paste0(dap$varname, "_", dap$scenario))

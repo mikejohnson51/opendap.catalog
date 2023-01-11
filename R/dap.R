@@ -7,8 +7,10 @@
 #' @param AOI sf object
 #' @param startDate start date (YYYY-MM-DD)
 #' @param endDate  end date (YYYY- MM-DD)
+#' @param start for non "dated" items, start can be called by index
+#' @param end for non "dated" items, end can be called by index
 #' @param varname  name of variable to extract. If NULL, then get all
-#' @param
+#' @param toptobottom should data be inverse?
 #' @param verbose  Should dap_summary be printed?
 #' @details Wraps dap_get and dap_crop into one.
 #' If AOI is NULL no spatial crop is executed. If startDate AND endDate are NULL, no temporal crop is executed. If just endDate is NULL it defaults to the startDate.
@@ -49,7 +51,8 @@ dap <- function(URL = NULL,
       varname = varname,
       verbose = verbose)
 
-    dap_get(dap)
+   dap_get(dap)
+
   }
 
 }
@@ -63,9 +66,9 @@ dap <- function(URL = NULL,
 #' @param varname a single or set of variables to collect, in NULL all are kept
 #' @param start for non "dated" items, start can be called by index
 #' @param end for non "dated" items, end can be called by index
-#' @param toptobottom should data be inversed?
-#' @param verbose should warning be emmited?
-#' @return
+#' @param toptobottom should data be inverse?
+#' @param verbose should warning be emitted?
+#' @return SpatRaster
 #' @export
 #' @importFrom terra rast ext crs vect crop project flip `ext<-` `crs<-`
 

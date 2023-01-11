@@ -31,6 +31,12 @@ dap(
 
 \item{varname}{name of variable to extract. If NULL, then get all}
 
+\item{start}{for non "dated" items, start can be called by index}
+
+\item{end}{for non "dated" items, end can be called by index}
+
+\item{toptobottom}{should data be inverse?}
+
 \item{verbose}{Should dap_summary be printed?}
 }
 \value{

@@ -19,7 +19,7 @@ test_that("dap_warn", {
 test_that("nwm read", {
   x = dap(URL = url, verbose = FALSE)
   expect_true(inherits(x, "SpatRaster"))
-  expect_true(all(as.vector(terra::ext(x)) == c(0,1,0,1)))
+  expect_true(all(as.vector(terra::ext(x)) == c(0,4608,0,3840)))
   expect_equal(ncell(x), 17694720)
 })
 

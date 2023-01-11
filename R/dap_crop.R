@@ -11,6 +11,7 @@
 #' @return data.frame
 #' @export
 #' @importFrom terra vect intersect ext project
+#' @importFrom glue glue
 
 dap_crop <- function(URL = NULL,
                      catalog = NULL,
@@ -128,10 +129,18 @@ dap_crop <- function(URL = NULL,
     }
   }
 
+  first = substr(catalog$dim_order,  1,1)
+  second = substr(catalog$dim_order, 2,2)
+  third = substr(catalog$dim_order,  3,3)
+
+  first = ifelse(length(first) == 0, "T", first)
+  second = ifelse(length(second) == 0, "Y", second)
+  third = ifelse(length(third) == 0, "X", third)
+
   if (any(grepl("XY", catalog$tiled))) {
-    catalog$URL <- paste0(catalog$URL, "/", catalog$tile, ".ncml?", catalog$varname, catalog$T, catalog$Y, catalog$X)
+    catalog$URL <-glue("{catalog$URL}/{catalog$tile}.ncml?{catalog$varname}{catalog[[first]]}{catalog[[second]]}{catalog[[third]]}")
   } else {
-    catalog$URL <- paste0(catalog$URL, "?", catalog$varname, catalog$T, catalog$Y, catalog$X)
+    catalog$URL <-glue("{catalog$URL}?{catalog$varname}{catalog[[first]]}{catalog[[second]]}{catalog[[third]]}")
   }
 
   if (!is.null(varname)) {

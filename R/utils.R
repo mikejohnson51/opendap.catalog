@@ -8,6 +8,7 @@
 #' @importFrom RNetCDF open.nc close.nc
 
 read_dap_file <- function(URL, varname = NULL, id, varmeta = TRUE) {
+
   nc <- RNetCDF::open.nc(URL)
   on.exit(close.nc(nc))
 
@@ -27,7 +28,7 @@ read_dap_file <- function(URL, varname = NULL, id, varmeta = TRUE) {
 #' @param varmeta should variable metadata be appended?
 #' @return data.frame with (varname, X_name, Y_name, T_name)
 #' @export
-#' @importFrom RNetCDF open.nc close.nc
+#' @importFrom RNetCDF open.nc close.nc var.inq.nc dim.inq.nc
 #' @importFrom ncmeta nc_coord_var nc_vars
 
 dap_xyzv <- function(obj, varname = NULL, varmeta = FALSE) {
@@ -36,7 +37,6 @@ dap_xyzv <- function(obj, varname = NULL, varmeta = FALSE) {
     obj <- RNetCDF::open.nc(obj)
     on.exit(close.nc(obj))
   }
-
 
   raw = suppressWarnings({
     tryCatch({
@@ -50,7 +50,13 @@ dap_xyzv <- function(obj, varname = NULL, varmeta = FALSE) {
     any(is.na(x))
   }), ]
 
+  o = rev(var.inq.nc(obj, varname)$dimids)
+  o = sapply(1:length(o), function(x){ dim.inq.nc(obj, o[x])$name } )
+  o = names(raw)[match(o ,raw)]
+
   names(raw) <- c("varname", "X_name", "Y_name", "T_name")
+
+  raw$dim_order = paste(o, collapse = "")
 
   ll <- list()
 
@@ -379,7 +385,7 @@ go_get_dap_data <- function(dap) {
   tryCatch(
     {
       if (grepl("http", dap$URL)) {
-        var_to_terra(get_data(dap), dap)
+        var_to_terra(var = get_data(dap), dap)
       } else {
         var_to_terra(dap_to_local(dap), dap)
       }
@@ -409,22 +415,36 @@ var_to_terra <- function(var, dap) {
   ymin <- dap$Y1 - 0.5 * resy
   ymax <- dap$Yn + 0.5 * resy
 
-  r <- terra::rast(
-    xmin = min(xmin, xmax),
-    xmax = max(xmax, xmax),
-    ymin = min(ymin, ymax),
-    ymax = max(ymin, ymax),
-    nrows = dap$nrows,
-    ncols = dap$ncols,
-    nlyrs = dap$Tdim,
-    crs = dap$proj
-  )
-
   if (length(dim(var)) == 2) {
-    dim(var) <- c(dim(var), 1)
+       dim(var) <- c(dim(var), 1)
   }
 
-  r[] <- var
+  if(dim(var)[1] != dap$nrows){
+    xt <- aperm(var, c(2,1,3))
+  }
+
+  r = rast(xt,crs = dap$proj, extent = c( xmin = min(xmin, xmax),
+                                           xmax = max(xmax, xmax),
+                                           ymin = min(ymin, ymax),
+                                           ymax = max(ymin, ymax)))
+
+
+  # r <- terra::rast(
+  #   xmin = min(xmin, xmax),
+  #   xmax = max(xmax, xmax),
+  #   ymin = min(ymin, ymax),
+  #   ymax = max(ymin, ymax),
+  #   nrows = dap$nrows,
+  #   ncols = dap$ncols,
+  #   nlyrs = dap$Tdim,
+  #   crs = dap$proj
+  # )
+
+  # if (length(dim(var)) == 2) {
+  #   dim(var) <- c(dim(var), 1)
+  # }
+  #
+  # r[] <- var
 
   if (dap$toptobottom) {
     r <- terra::flip(r)
@@ -492,7 +512,8 @@ var_to_terra2 <- function(dap) {
 get_data <- function(dap) {
   nc <- RNetCDF::open.nc(paste0(dap$URL, "#fillmismatch"))
   on.exit(close.nc(nc))
-  as.vector(RNetCDF::var.get.nc(nc, dap$varname, unpack = TRUE))
+  #as.vector(RNetCDF::var.get.nc(nc, dap$varname, unpack = TRUE))
+  RNetCDF::var.get.nc(nc, dap$varname, unpack = TRUE)
 }
 
 #' Convert OpenDAP to start/count call
@@ -504,7 +525,7 @@ get_data <- function(dap) {
 
 dap_to_local <- function(dap, get = TRUE) {
   if (nrow(dap) != 1) {
-    stop("This function processes only 1 DAP row at a time... currently there are ", nrow(dap))
+    stop("This function processes only 1 DAP row at a time ... currently there are ", nrow(dap))
   }
 
   nc <- open.nc(sub("\\?.*", "", dap$URL))
