@@ -420,10 +420,10 @@ var_to_terra <- function(var, dap) {
   }
 
   if(dim(var)[1] != dap$nrows){
-    xt <- aperm(var, c(2,1,3))
+    var <- aperm(var, c(2,1,3))
   }
 
-  r = rast(xt,crs = dap$proj, extent = c( xmin = min(xmin, xmax),
+  r = rast(var, crs = dap$proj, extent = c( xmin = min(xmin, xmax),
                                            xmax = max(xmax, xmax),
                                            ymin = min(ymin, ymax),
                                            ymax = max(ymin, ymax)))
